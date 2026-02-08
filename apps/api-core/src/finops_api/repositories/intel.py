@@ -38,6 +38,25 @@ class IntelRepository:
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def create_replay(self, *, org_id: UUID, source_run: IntelRun) -> IntelRun:
+        replay_run = IntelRun(
+            org_id=org_id,
+            run_type=source_run.run_type,
+            status='pending',
+            model_name=source_run.model_name,
+            prompt_version=source_run.prompt_version,
+            input_snapshot_uri=source_run.input_snapshot_uri,
+            input_payload=source_run.input_payload,
+            graph_version=source_run.graph_version,
+            execution_mode='replay',
+            replay_source_run_id=source_run.id,
+            output_payload={},
+        )
+        self.session.add(replay_run)
+        await self.session.commit()
+        await self.session.refresh(replay_run)
+        return replay_run
+
     async def mark_running(self, run: IntelRun) -> IntelRun:
         run.status = 'running'
         run.error_message = None
