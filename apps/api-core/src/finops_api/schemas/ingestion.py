@@ -19,7 +19,7 @@ class IngestionJobCreate(BaseModel):
         }
     )
 
-    provider: Literal['tavily', 'serper', 'serpapi', 'twelvedata']
+    provider: Literal['tavily', 'serper', 'serpapi', 'twelvedata', 'alphavantage']
     resource: Literal['news_search', 'market_timeseries_backfill', 'market_quote_refresh']
     idempotency_key: str = Field(min_length=4, max_length=128)
     payload: dict[str, Any] = Field(default_factory=dict)

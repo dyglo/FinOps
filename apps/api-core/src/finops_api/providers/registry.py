@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from finops_api.providers.alphavantage.client import AlphaVantageAdapter
 from finops_api.providers.base import MarketDataProvider, ProviderError, SearchProvider
 from finops_api.providers.serpapi.client import SerpApiAdapter
 from finops_api.providers.serper.client import SerperAdapter
@@ -25,6 +26,8 @@ def get_search_provider(provider: str) -> SearchProvider:
 def get_market_data_provider(provider: str) -> MarketDataProvider:
     if provider == 'twelvedata':
         return TwelveDataAdapter()
+    if provider == 'alphavantage':
+        return AlphaVantageAdapter()
     raise ProviderError(
         f'Unsupported market data provider: {provider}',
         code='provider_unsupported',
