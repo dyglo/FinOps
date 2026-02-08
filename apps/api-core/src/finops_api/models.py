@@ -32,8 +32,80 @@ class IngestionJob(Base, OrgScopedMixin, TimestampMixin):
     provider: Mapped[str] = mapped_column(String(64), nullable=False)
     resource: Mapped[str] = mapped_column(String(128), nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False, default='queued')
-    idempotency_key: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
+    idempotency_key: Mapped[str] = mapped_column(String(128), nullable=False)
     payload: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False, default=dict)
+    attempt_count: Mapped[int] = mapped_column(default=0, nullable=False)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        Index(
+            'uq_ingestion_jobs_org_provider_resource_idempotency',
+            'org_id',
+            'provider',
+            'resource',
+            'idempotency_key',
+            unique=True,
+        ),
+    )
+
+
+class IngestionRawPayload(Base, OrgScopedMixin):
+    __tablename__ = 'ingestion_raw_payloads'
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
+    job_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False, index=True)
+    provider: Mapped[str] = mapped_column(String(64), nullable=False)
+    resource: Mapped[str] = mapped_column(String(128), nullable=False)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    request_payload: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False, default=dict)
+    response_payload: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False, default=dict)
+    http_status: Mapped[int | None] = mapped_column(nullable=True)
+    provider_request_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        Index('ix_ingestion_raw_payloads_org_job', 'org_id', 'job_id'),
+        Index('ix_ingestion_raw_payloads_org_content_hash', 'org_id', 'content_hash'),
+        Index(
+            'uq_ingestion_raw_payloads_org_provider_content_hash',
+            'org_id',
+            'provider',
+            'content_hash',
+            unique=True,
+        ),
+    )
+
+
+class NewsDocument(Base, OrgScopedMixin):
+    __tablename__ = 'news_documents'
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
+    job_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False, index=True)
+    raw_payload_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False, index=True)
+    source_provider: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_url: Mapped[str] = mapped_column(Text, nullable=False)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    snippet: Mapped[str] = mapped_column(Text, nullable=False)
+    author: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    language: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    document_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        Index('ix_news_documents_org_job', 'org_id', 'job_id'),
+        Index('ix_news_documents_org_published_at', 'org_id', 'published_at'),
+        Index(
+            'uq_news_documents_org_provider_url_document_hash',
+            'org_id',
+            'source_provider',
+            'source_url',
+            'document_hash',
+            unique=True,
+        ),
+    )
 
 
 class IntelRun(Base, OrgScopedMixin, TimestampMixin):
