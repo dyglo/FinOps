@@ -42,7 +42,6 @@ export function IngestionControl() {
     refetchInterval: (query) => {
       const status = query.state.data?.data.status;
       if (status === 'completed' || status === 'failed') {
-          // Invalidate news query to show fresh results
           queryClient.invalidateQueries({ queryKey: ['news'] });
           return false;
       }
@@ -61,29 +60,29 @@ export function IngestionControl() {
     <GlassCard variant="highlight" className="p-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center border border-emerald-200">
-            <Database className="h-5 w-5 text-emerald-700" />
+          <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center border border-emerald-200 dark:border-emerald-900/50">
+            <Database className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-emerald-950">Ingestion Control</h3>
-            <p className="text-xs text-emerald-700/60 font-bold uppercase tracking-widest">Data Pipeline</p>
+            <h3 className="text-lg font-bold text-emerald-950 dark:text-emerald-50">Ingestion Control</h3>
+            <p className="text-xs text-emerald-700/60 dark:text-emerald-400/60 font-bold uppercase tracking-widest">Data Pipeline</p>
           </div>
         </div>
         
         {job && (
-          <div className="flex items-center gap-3 bg-white/50 px-4 py-2 rounded-full border border-emerald-100/50">
-             <span className="text-xs font-bold text-emerald-900">Job Status:</span>
+          <div className="flex items-center gap-3 bg-white/50 dark:bg-black/20 px-4 py-2 rounded-full border border-emerald-100/50 dark:border-emerald-900/30">
+             <span className="text-xs font-bold text-emerald-900 dark:text-emerald-400">Job Status:</span>
              <Badge variant={
                 job.data.status === 'completed' ? 'success' : 
                 job.data.status === 'failed' ? 'destructive' : 'secondary'
-             } className="capitalize flex items-center gap-1.5">
+             } className="capitalize flex items-center gap-1.5 border-none">
                 {job.data.status === 'processing' && <Loader2 className="h-3 w-3 animate-spin" />}
                 {job.data.status === 'completed' && <CheckCircle2 className="h-3 w-3" />}
                 {job.data.status === 'failed' && <AlertCircle className="h-3 w-3" />}
                 {job.data.status}
              </Badge>
              {job.data.normalized_record_count > 0 && (
-                <span className="text-xs font-bold text-emerald-700 border-l border-emerald-200 pl-3">
+                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 border-l border-emerald-200 dark:border-emerald-900/50 pl-3">
                    {job.data.normalized_record_count} Records
                 </span>
              )}
@@ -97,12 +96,12 @@ export function IngestionControl() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="e.g. NVIDIA earnings report Q4 2025..."
           disabled={mutation.isPending}
-          className="bg-white/80 border-emerald-200 focus-visible:ring-emerald-500 h-12 rounded-xl"
+          className="bg-white/80 dark:bg-black/40 border-emerald-200 dark:border-emerald-900/50 focus-visible:ring-emerald-500 h-12 rounded-xl text-black dark:text-white"
         />
         <Button 
           type="submit" 
           disabled={mutation.isPending || !query.trim()}
-          className="bg-emerald-900 hover:bg-emerald-800 text-white btn-pill h-12 px-6"
+          className="bg-emerald-900 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white btn-pill h-12 px-6"
         >
           {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4 fill-current" />}
           <span className="ml-2">Run Ingestion</span>

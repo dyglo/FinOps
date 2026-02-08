@@ -14,7 +14,6 @@ import {
   Clock, 
   ArrowRight, 
   Loader2, 
-  FileText,
   Zap,
   Cpu,
   BrainCircuit,
@@ -52,20 +51,20 @@ export default function ResearchPage() {
       {/* TERMINAL HEADER */}
       <div className="flex items-center justify-between px-2">
         <div className="flex items-center gap-4">
-           <div className="h-10 w-10 rounded-xl bg-black flex items-center justify-center shadow-lg">
+           <div className="h-10 w-10 rounded-xl bg-black dark:bg-zinc-900 flex items-center justify-center shadow-lg border border-white/10">
               <BrainCircuit className="h-5 w-5 text-white" />
            </div>
            <div>
-              <h1 className="text-xl font-bold text-black tracking-tight">Research Lab</h1>
+              <h1 className="text-xl font-bold text-black dark:text-white tracking-tight">Research Lab</h1>
               <div className="flex items-center gap-2">
-                 <Badge className="text-[8px] h-4 px-1.5 font-black uppercase bg-purple-100 text-purple-700 border-purple-200">Agentic Engine Online</Badge>
-                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">v1.2.0 (Alpha)</span>
+                 <Badge className="text-[8px] h-4 px-1.5 font-black uppercase bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-900/50">Agentic Engine Online</Badge>
+                 <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-bold uppercase tracking-widest">v1.2.0 (Alpha)</span>
               </div>
            </div>
         </div>
 
         <div className="flex items-center gap-2">
-           <Button variant="outline" className="h-10 px-4 gap-2 text-xs font-bold uppercase tracking-wider border-none glass-card bg-white/40 hover:bg-white transition-all">
+           <Button variant="outline" className="h-10 px-4 gap-2 text-xs font-bold uppercase tracking-wider border-none glass-card bg-white/40 dark:bg-zinc-900/40 hover:bg-white dark:hover:bg-zinc-800 transition-all text-gray-600 dark:text-zinc-400">
               <Settings2 className="h-4 w-4" />
               <span>Engine Config</span>
            </Button>
@@ -75,47 +74,47 @@ export default function ResearchPage() {
       <div className="flex-1 flex gap-6 overflow-hidden min-h-0">
          {/* Left: Research Configuration */}
          <div className="flex-1 flex flex-col gap-6 overflow-hidden">
-            <GlassCard className="p-10 space-y-10 relative overflow-hidden border-none shadow-xl bg-white/60">
-               <div className="absolute top-0 right-0 w-80 h-80 bg-purple-200 rounded-full blur-[120px] opacity-20 -translate-y-1/2 translate-x-1/3" />
+            <GlassCard className="p-10 space-y-10 relative overflow-hidden border-none shadow-xl bg-white/60 dark:bg-zinc-900/60">
+               <div className="absolute top-0 right-0 w-80 h-80 bg-purple-200 dark:bg-purple-900/20 rounded-full blur-[120px] opacity-20 -translate-y-1/2 translate-x-1/3" />
                
                <div className="flex items-center gap-6">
-                  <div className="h-16 w-16 rounded-[24px] bg-black flex items-center justify-center text-white shadow-2xl shadow-purple-900/20">
+                  <div className="h-16 w-16 rounded-[24px] bg-black dark:bg-zinc-800 flex items-center justify-center text-white shadow-2xl shadow-purple-900/20 border border-white/10">
                      <Bot className="h-8 w-8" />
                   </div>
                   <div>
-                     <h2 className="text-3xl font-bold text-black tracking-tighter">New Research Mission</h2>
-                     <p className="text-xs text-gray-400 font-black uppercase tracking-[0.2em]">Deployment Specification</p>
+                     <h2 className="text-3xl font-bold text-black dark:text-white tracking-tighter">New Research Mission</h2>
+                     <p className="text-xs text-gray-400 dark:text-zinc-500 font-black uppercase tracking-[0.2em]">Deployment Specification</p>
                   </div>
                </div>
 
                <div className="space-y-8 max-w-3xl">
                   <div className="space-y-4">
                      <div className="flex items-center justify-between px-1">
-                        <label className="text-[10px] font-black text-black uppercase tracking-[0.2em]">Research Objective</label>
-                        <Badge variant="secondary" className="bg-gray-100 text-gray-400 text-[8px] font-black uppercase">Required</Badge>
+                        <label className="text-[10px] font-black text-black dark:text-white uppercase tracking-[0.2em]">Research Objective</label>
+                        <Badge variant="secondary" className="bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 text-[8px] font-black uppercase">Required</Badge>
                      </div>
                      <Input 
                         value={topic}
                         onChange={(e) => setTopic(e.target.value)}
                         placeholder="e.g. Synthesize macro impact of Fed rate cuts on Tech equity risk premiums..." 
-                        className="h-16 text-xl bg-white/50 border-gray-100 focus-visible:ring-black rounded-[24px] px-6 shadow-sm font-medium"
+                        className="h-16 text-xl bg-white/50 dark:bg-black/40 border-gray-100 dark:border-zinc-800 focus-visible:ring-black dark:focus-visible:ring-white rounded-[24px] px-6 shadow-sm font-medium text-black dark:text-white"
                      />
                      <div className="flex gap-4">
-                        <Badge variant="outline" className="border-gray-100 text-gray-400 py-1 cursor-pointer hover:border-black transition-colors">&quot;NVIDIA earnings Q4 2025&quot;</Badge>
-                        <Badge variant="outline" className="border-gray-100 text-gray-400 py-1 cursor-pointer hover:border-black transition-colors">&quot;Oil market volatility Q1&quot;</Badge>
+                        <Badge variant="outline" className="border-gray-100 dark:border-zinc-800 text-gray-400 dark:text-zinc-500 py-1 cursor-pointer hover:border-black dark:hover:border-white transition-colors">&quot;NVIDIA earnings Q4 2025&quot;</Badge>
+                        <Badge variant="outline" className="border-gray-100 dark:border-zinc-800 text-gray-400 dark:text-zinc-500 py-1 cursor-pointer hover:border-black dark:hover:border-white transition-colors">&quot;Oil market volatility Q1&quot;</Badge>
                      </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
                      <ConfigModule label="Model" value="GPT-4 Turbo" icon={<Cpu className="h-3.5 w-3.5" />} active />
                      <ConfigModule label="Depth" value="Level 4 (High)" icon={<ListFilter className="h-3.5 w-3.5" />} />
-                     <ConfigModule label="Outputs" value="Full Memo + Tool Trace" icon={<FileText className="h-3.5 w-3.5" />} />
+                     <ConfigModule label="Outputs" value="Full Memo" icon={<Zap className="h-3.5 w-3.5" />} />
                   </div>
 
                   <Button 
                     onClick={() => mutation.mutate()}
                     disabled={mutation.isPending || !topic}
-                    className="w-full h-16 text-lg bg-black hover:bg-zinc-800 text-white rounded-[24px] shadow-2xl shadow-black/20 group transition-all"
+                    className="w-full h-16 text-lg bg-black dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-black rounded-[24px] shadow-2xl shadow-black/20 group transition-all"
                   >
                      {mutation.isPending ? (
                         <>
@@ -130,47 +129,47 @@ export default function ResearchPage() {
                </div>
             </GlassCard>
             
-            <div className="p-8 rounded-[40px] border-2 border-dashed border-gray-100 flex flex-col items-center justify-center text-center space-y-3 opacity-40">
-               <Zap className="h-10 w-10 text-gray-300" />
-               <p className="text-sm font-black uppercase tracking-widest text-gray-400">Real-time Memo Generation Surface</p>
-               <p className="text-xs font-bold text-gray-300">Start a mission to visualize agentic synthesis</p>
+            <div className="p-8 rounded-[40px] border-2 border-dashed border-gray-100 dark:border-zinc-800 flex flex-col items-center justify-center text-center space-y-3 opacity-40">
+               <Zap className="h-10 w-10 text-gray-300 dark:text-zinc-700" />
+               <p className="text-sm font-black uppercase tracking-widest text-gray-400 dark:text-zinc-600">Real-time Memo Generation Surface</p>
+               <p className="text-xs font-bold text-gray-300 dark:text-zinc-700">Start a mission to visualize agentic synthesis</p>
             </div>
          </div>
 
          {/* Right: Mission History Ledger */}
          <div className="w-[400px] flex flex-col gap-4 overflow-hidden">
             <GlassCard className="p-0 flex-1 flex flex-col overflow-hidden border-none shadow-xl">
-               <div className="p-4 border-b border-gray-100 bg-white/60 backdrop-blur-md flex items-center justify-between">
+               <div className="p-4 border-b border-[var(--line-soft)] bg-[var(--surface-1)]/60 backdrop-blur-md flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                     <Clock className="h-4 w-4 text-gray-400" />
-                     <span className="text-xs font-bold text-black uppercase tracking-widest">Mission Ledger</span>
+                     <Clock className="h-4 w-4 text-gray-400 dark:text-zinc-500" />
+                     <span className="text-xs font-bold text-black dark:text-white uppercase tracking-widest">Mission Ledger</span>
                   </div>
-                  <Badge variant="outline" className="text-[9px] border-gray-100 font-bold uppercase text-gray-400 px-2 h-5">History</Badge>
+                  <Badge variant="outline" className="text-[9px] border-gray-100 dark:border-zinc-800 font-bold uppercase text-gray-400 dark:text-zinc-500 px-2 h-5">History</Badge>
                </div>
                
-               <div className="flex-1 overflow-y-auto divide-y divide-gray-50 custom-scrollbar">
+               <div className="flex-1 overflow-y-auto divide-y divide-[var(--line-soft)] custom-scrollbar">
                   {previousRuns.map((run) => (
-                     <div key={run.id} className="p-5 flex items-start gap-4 cursor-pointer hover:bg-gray-50/50 transition-all group border-l-4 border-transparent hover:border-black">
+                     <div key={run.id} className="p-5 flex items-start gap-4 cursor-pointer hover:bg-[var(--surface-0)] transition-all group border-l-4 border-transparent hover:border-black dark:hover:border-white">
                         <div className={`
                            h-10 w-10 rounded-xl flex items-center justify-center border-2
-                           ${run.status === 'completed' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : ''}
-                           ${run.status === 'processing' ? 'bg-blue-50 border-blue-100 text-blue-600' : ''}
-                           ${run.status === 'failed' ? 'bg-red-50 border-red-100 text-red-600' : ''}
+                           ${run.status === 'completed' ? 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-100 dark:border-emerald-900/50 text-emerald-600 dark:text-emerald-400' : ''}
+                           ${run.status === 'processing' ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-100 dark:border-blue-900/50 text-blue-600 dark:text-blue-400' : ''}
+                           ${run.status === 'failed' ? 'bg-red-50 dark:bg-red-900/30 border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400' : ''}
                         `}>
-                           {run.status === 'processing' ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+                           {run.status === 'processing' ? <Loader2 className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
                         </div>
                         <div className="flex-1 min-w-0 space-y-1">
-                           <h4 className="font-bold text-sm text-black truncate group-hover:text-blue-700 transition-colors">{run.topic}</h4>
-                           <div className="flex items-center gap-3 text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
-                              <span className="text-gray-300">{run.model}</span>
-                              <span className="text-gray-200">•</span>
+                           <h4 className="font-bold text-sm text-black dark:text-white truncate group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">{run.topic}</h4>
+                           <div className="flex items-center gap-3 text-[10px] text-gray-400 dark:text-zinc-500 font-bold uppercase tracking-tighter font-mono">
+                              <span className="text-gray-300 dark:text-zinc-700">{run.model}</span>
+                              <span className="text-gray-200 dark:text-zinc-800">•</span>
                               <span>{format(new Date(run.date), 'MMM d, HH:mm')}</span>
                            </div>
                         </div>
                         <Badge variant={
                            run.status === 'completed' ? 'success' :
                            run.status === 'processing' ? 'secondary' : 'destructive'
-                        } className="capitalize text-[9px] h-5 px-1.5 font-black">
+                        } className="capitalize text-[9px] h-5 px-1.5 font-black border-none">
                            {run.status}
                         </Badge>
                      </div>
@@ -187,13 +186,13 @@ function ConfigModule({ label, value, icon, active }: any) {
   return (
     <div className={`
        p-4 rounded-[24px] border-2 transition-all cursor-pointer
-       ${active ? 'bg-black border-black text-white shadow-xl shadow-black/10' : 'bg-white/40 border-gray-50 text-black hover:border-gray-200'}
+       ${active ? 'bg-black dark:bg-white border-black dark:border-white text-white dark:text-black shadow-xl' : 'bg-white/40 dark:bg-zinc-900/40 border-gray-50 dark:border-zinc-800 text-black dark:text-white hover:border-gray-200 dark:hover:border-zinc-700'}
     `}>
        <div className="flex items-center gap-2 mb-2">
-          <div className={`h-6 w-6 rounded-lg flex items-center justify-center ${active ? 'bg-white/20' : 'bg-black/5'}`}>
+          <div className={`h-6 w-6 rounded-lg flex items-center justify-center ${active ? 'bg-white/20 dark:bg-black/10' : 'bg-black/5 dark:bg-white/5'}`}>
              {icon}
           </div>
-          <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${active ? 'text-white/60' : 'text-gray-300'}`}>{label}</span>
+          <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${active ? 'text-white/60 dark:text-black/60' : 'text-gray-300 dark:text-zinc-600'}`}>{label}</span>
        </div>
        <div className="text-xs font-bold truncate">{value}</div>
     </div>
