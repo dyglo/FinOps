@@ -1,42 +1,72 @@
-import { finopsApiClient } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Activity, BarChart2, PieChart } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 export default async function TickersPage() {
   let records = 0;
   try {
-    const response = await finopsApiClient.listNewsDocuments({ limit: 25, offset: 0 });
+    const response: any = await api.get('/v1/documents/news', { params: { limit: 25 } });
     records = response.data.length;
   } catch {
     records = 0;
   }
 
   return (
-    <main className="space-y-6">
-      <section>
-        <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">Market Expansion Lane</p>
-        <h1 className="mt-2 text-3xl font-semibold text-[var(--text-strong)]">Ticker Lab</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--text-base)]">
-          Placeholder surfaces for market feeds and symbol analytics, already connected to current canonical data lane
-          contracts for continuity.
-        </p>
-      </section>
+    <div className="space-y-8">
+      <header>
+        <h1 className="text-3xl font-bold text-black">Ticker Lab</h1>
+        <p className="text-gray-500 mt-1">Market expansion lanes and symbol analytics prototyping.</p>
+      </header>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface-1)] p-5">
-          <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">News-backed Signals</p>
-          <p className="mt-3 text-3xl font-semibold text-[var(--text-strong)]">{records}</p>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">Records available for signal prototyping.</p>
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card className="border-none glass-card rounded-[32px] p-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-400">
+              News Signals
+            </CardTitle>
+            <Activity className="h-4 w-4 text-emerald-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-black">{records}</div>
+            <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-tighter">Canonical records loaded</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none glass-card rounded-[32px] p-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-400">
+              Market Stream
+            </CardTitle>
+            <BarChart2 className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-bold text-black">Twelve Data Lane</div>
+            <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-tighter">Reserved for integration</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none glass-card rounded-[32px] p-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-400">
+              Execution
+            </CardTitle>
+            <PieChart className="h-4 w-4 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-bold text-black">Alpaca Telemetry</div>
+            <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-tighter">Future order lane</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="h-96 rounded-[40px] bg-gray-50 border border-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-sm font-bold text-gray-400">Symbol Analytics Visualization</p>
+          <p className="text-xs text-gray-400 mt-1">Prototype surfaces loading...</p>
         </div>
-        <div className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface-1)] p-5">
-          <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">Price Stream Slot</p>
-          <p className="mt-3 text-lg font-medium text-[var(--text-strong)]">Reserved for Twelve Data integration</p>
-        </div>
-        <div className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface-1)] p-5">
-          <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">Execution Slot</p>
-          <p className="mt-3 text-lg font-medium text-[var(--text-strong)]">Reserved for Alpaca order telemetry</p>
-        </div>
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }
