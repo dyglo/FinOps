@@ -14,10 +14,70 @@ from finops_api.schemas.common import ApiResponse, MetaEnvelope
 from finops_api.schemas.ingestion import IngestionJobCreate, IngestionJobRead
 from finops_api.services.queue import enqueue_ingestion_job
 
+CREATE_JOB_EXAMPLE = {
+    'data': {
+        'id': '3f4b1ea3-0571-4412-a4cf-59b8a70f4481',
+        'org_id': '00000000-0000-0000-0000-000000000001',
+        'provider': 'tavily',
+        'resource': 'news_search',
+        'status': 'queued',
+        'idempotency_key': 'news-nvda-20260208-001',
+        'payload': {'query': 'nvidia earnings', 'max_results': 8},
+        'schema_version': 'v1',
+        'attempt_count': 0,
+        'error_message': None,
+        'started_at': None,
+        'completed_at': None,
+        'raw_record_count': 0,
+        'normalized_record_count': 0,
+        'created_at': '2026-02-08T20:12:00.123456Z',
+        'updated_at': '2026-02-08T20:12:00.123456Z',
+    },
+    'error': None,
+    'meta': {
+        'request_id': '2afce9f9-7f9f-4bb7-b7bb-e9e11e2c6f2a',
+        'org_id': '00000000-0000-0000-0000-000000000001',
+        'ts': '2026-02-08T20:12:00.123456Z',
+        'version': 'v1',
+    },
+}
+
+GET_JOB_EXAMPLE = {
+    'data': {
+        'id': '3f4b1ea3-0571-4412-a4cf-59b8a70f4481',
+        'org_id': '00000000-0000-0000-0000-000000000001',
+        'provider': 'tavily',
+        'resource': 'news_search',
+        'status': 'completed',
+        'idempotency_key': 'news-nvda-20260208-001',
+        'payload': {'query': 'nvidia earnings', 'max_results': 8},
+        'schema_version': 'v1',
+        'attempt_count': 1,
+        'error_message': None,
+        'started_at': '2026-02-08T20:12:05.123456Z',
+        'completed_at': '2026-02-08T20:12:07.123456Z',
+        'raw_record_count': 1,
+        'normalized_record_count': 8,
+        'created_at': '2026-02-08T20:12:00.123456Z',
+        'updated_at': '2026-02-08T20:12:07.123456Z',
+    },
+    'error': None,
+    'meta': {
+        'request_id': 'c2660159-a4d8-4ac8-92ad-294683c53033',
+        'org_id': '00000000-0000-0000-0000-000000000001',
+        'ts': '2026-02-08T20:12:07.123456Z',
+        'version': 'v1',
+    },
+}
+
 router = APIRouter(prefix='/v1/ingestion', tags=['ingestion'])
 
 
-@router.post('/jobs', response_model=ApiResponse[IngestionJobRead])
+@router.post(
+    '/jobs',
+    response_model=ApiResponse[IngestionJobRead],
+    responses={200: {'content': {'application/json': {'example': CREATE_JOB_EXAMPLE}}}},
+)
 async def create_job(
     payload: IngestionJobCreate,
     request: Request,
@@ -45,7 +105,11 @@ async def create_job(
     )
 
 
-@router.get('/jobs/{job_id}', response_model=ApiResponse[IngestionJobRead])
+@router.get(
+    '/jobs/{job_id}',
+    response_model=ApiResponse[IngestionJobRead],
+    responses={200: {'content': {'application/json': {'example': GET_JOB_EXAMPLE}}}},
+)
 async def get_job(
     job_id: UUID,
     request: Request,
