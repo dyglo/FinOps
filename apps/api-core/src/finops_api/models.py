@@ -117,6 +117,12 @@ class IntelRun(Base, OrgScopedMixin, TimestampMixin):
     model_name: Mapped[str] = mapped_column(String(128), nullable=False)
     prompt_version: Mapped[str] = mapped_column(String(64), nullable=False)
     input_snapshot_uri: Mapped[str] = mapped_column(Text, nullable=False)
+    input_payload: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False, default=dict)
+    graph_version: Mapped[str] = mapped_column(String(32), nullable=False, default='v1')
+    execution_mode: Mapped[str] = mapped_column(String(16), nullable=False, default='live')
+    replay_source_run_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     output_payload: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False, default=dict)
 
 
