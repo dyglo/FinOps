@@ -38,11 +38,13 @@ function buildUrl(path: string, query?: Record<string, string | number | undefin
   return url;
 }
 
-async function apiFetch<T>(
-  path: string,
-  init?: RequestInit,
-  query?: Record<string, string | number | undefined>,
-): Promise<T> {
+function sleep(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+async function doRequest<T>(path: string, init?: RequestInit, query?: Record<string, string | number | undefined>) {
   const { orgId } = getWebRuntimeConfig();
   const response = await fetch(buildUrl(path, query), {
     ...init,
@@ -60,6 +62,33 @@ async function apiFetch<T>(
   }
 
   return (await response.json()) as T;
+}
+
+async function apiFetch<T>(
+  path: string,
+  init?: RequestInit,
+  query?: Record<string, string | number | undefined>,
+): Promise<T> {
+  const method = (init?.method ?? 'GET').toUpperCase();
+  const canRetry = method === 'GET';
+  const maxAttempts = canRetry ? 3 : 1;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await doRequest<T>(path, init, query);
+    } catch (error) {
+      const isRetryable =
+        error instanceof FinopsApiError ? error.statusCode >= 500 : error instanceof Error;
+
+      if (!canRetry || !isRetryable || attempt === maxAttempts) {
+        throw error;
+      }
+
+      await sleep(250 * attempt);
+    }
+  }
+
+  throw new Error('Unexpected request failure');
 }
 
 export const finopsApiClient = {

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { DashboardChartPanel } from '@/components/charts/dashboard-chart-panel';
 import { finopsApiClient } from '@/lib/api/client';
 
 export const dynamic = 'force-dynamic';
@@ -38,6 +39,14 @@ export default async function DashboardPage() {
             Open Research Room
           </Link>
         </div>
+      </section>
+
+      <section className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface-1)] p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-[var(--text-strong)]">Live Market Analytics</h2>
+          <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">TradingView Advanced Chart</p>
+        </div>
+        <DashboardChartPanel />
       </section>
 
       <section className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface-1)] p-6">
