@@ -14,21 +14,12 @@ from finops_api.services.rate_limit import provider_rate_limit_key, take_provide
 class FakeRedis:
     def __init__(self) -> None:
         self.store: dict[str, str] = {}
-        self.counts: dict[str, int] = {}
 
     async def get(self, key: str) -> str | None:
         return self.store.get(key)
 
     async def set(self, key: str, value: str, ex: int) -> None:  # noqa: ARG002
         self.store[key] = value
-
-    async def incr(self, key: str) -> int:
-        value = self.counts.get(key, 0) + 1
-        self.counts[key] = value
-        return value
-
-    async def expire(self, key: str, ttl: int) -> None:  # noqa: ARG002
-        _ = key
 
 
 def test_stable_payload_hash_is_deterministic() -> None:
@@ -75,4 +66,66 @@ async def test_rate_limit_bucket() -> None:
         provider='tavily',
         org_id='org1',
         limit_per_minute=2,
+    )
+
+
+@pytest.mark.asyncio
+async def test_rate_limit_bucket_refills_over_time() -> None:
+    redis = FakeRedis()
+
+    assert await take_provider_token(
+        redis,
+        provider='tavily',
+        org_id='org1',
+        limit_per_minute=2,
+        now_seconds=100.0,
+    )
+    assert await take_provider_token(
+        redis,
+        provider='tavily',
+        org_id='org1',
+        limit_per_minute=2,
+        now_seconds=100.0,
+    )
+    assert not await take_provider_token(
+        redis,
+        provider='tavily',
+        org_id='org1',
+        limit_per_minute=2,
+        now_seconds=100.0,
+    )
+
+    assert await take_provider_token(
+        redis,
+        provider='tavily',
+        org_id='org1',
+        limit_per_minute=2,
+        now_seconds=130.0,
+    )
+
+
+@pytest.mark.asyncio
+async def test_rate_limit_bucket_is_isolated_per_org() -> None:
+    redis = FakeRedis()
+
+    assert await take_provider_token(
+        redis,
+        provider='tavily',
+        org_id='org-a',
+        limit_per_minute=1,
+        now_seconds=200.0,
+    )
+    assert not await take_provider_token(
+        redis,
+        provider='tavily',
+        org_id='org-a',
+        limit_per_minute=1,
+        now_seconds=200.0,
+    )
+    assert await take_provider_token(
+        redis,
+        provider='tavily',
+        org_id='org-b',
+        limit_per_minute=1,
+        now_seconds=200.0,
     )
