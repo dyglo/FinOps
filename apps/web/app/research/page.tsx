@@ -1,14 +1,27 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { api } from '@/lib/api/client';
 import { IntelRunResponseSchema } from '@/lib/api/schemas';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Sparkles, Clock, ArrowRight, Loader2, FileText } from 'lucide-react';
+import { 
+  Bot, 
+  Sparkles, 
+  Clock, 
+  ArrowRight, 
+  Loader2, 
+  FileText,
+  Zap,
+  Cpu,
+  BrainCircuit,
+  Settings2,
+  ListFilter
+} from 'lucide-react';
+import { format } from 'date-fns';
 
 export default function ResearchPage() {
   const [topic, setTopic] = useState('');
@@ -27,118 +40,162 @@ export default function ResearchPage() {
     }
   });
 
-  // Mock previous runs for UI demonstration if no real runs exist yet
+  // Using static ISO strings to avoid purity errors during render
   const previousRuns = [
-    { id: '1', topic: 'NVIDIA AI Chip Demand', status: 'completed', date: '2h ago' },
-    { id: '2', topic: 'Oil Price Impact on Airlines', status: 'failed', date: '5h ago' },
-    { id: '3', topic: 'Crypto Regulation 2026', status: 'processing', date: 'Just now' },
+    { id: '1', topic: 'NVIDIA AI Chip Demand Analysis', status: 'completed', date: '2026-02-08T12:00:00Z', model: 'GPT-4T' },
+    { id: '2', topic: 'Oil Price Impact on Airlines Q1', status: 'failed', date: '2026-02-08T11:00:00Z', model: 'GPT-4T' },
+    { id: '3', topic: 'Crypto Regulation 2026 Forecast', status: 'processing', date: '2026-02-08T13:45:00Z', model: 'Claude 3' },
   ];
 
   return (
-    <div className="flex flex-col gap-12 py-8 pb-20">
-      <div className="text-center max-w-2xl mx-auto space-y-4">
-         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 border border-purple-100 text-purple-700 text-xs font-bold uppercase tracking-widest">
-            <Sparkles className="h-3 w-3" /> Agentic Intelligence
-         </div>
-         <h1 className="text-5xl font-bold text-black tracking-tight">Research Lab</h1>
-         <p className="text-lg text-gray-500">
-            Deploy autonomous agents to synthesize market data into actionable memos.
-         </p>
+    <div className="flex flex-col h-[calc(100vh-100px)] gap-4 py-4">
+      {/* TERMINAL HEADER */}
+      <div className="flex items-center justify-between px-2">
+        <div className="flex items-center gap-4">
+           <div className="h-10 w-10 rounded-xl bg-black flex items-center justify-center shadow-lg">
+              <BrainCircuit className="h-5 w-5 text-white" />
+           </div>
+           <div>
+              <h1 className="text-xl font-bold text-black tracking-tight">Research Lab</h1>
+              <div className="flex items-center gap-2">
+                 <Badge className="text-[8px] h-4 px-1.5 font-black uppercase bg-purple-100 text-purple-700 border-purple-200">Agentic Engine Online</Badge>
+                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">v1.2.0 (Alpha)</span>
+              </div>
+           </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+           <Button variant="outline" className="h-10 px-4 gap-2 text-xs font-bold uppercase tracking-wider border-none glass-card bg-white/40 hover:bg-white transition-all">
+              <Settings2 className="h-4 w-4" />
+              <span>Engine Config</span>
+           </Button>
+        </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8 items-start">
-         {/* Configuration Card */}
-         <GlassCard className="lg:col-span-2 p-10 space-y-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-200 rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/3" />
-            
-            <div className="flex items-center gap-4">
-               <div className="h-14 w-14 rounded-2xl bg-black flex items-center justify-center text-white shadow-xl shadow-purple-900/10">
-                  <Bot className="h-7 w-7" />
-               </div>
-               <div>
-                  <h2 className="text-2xl font-bold text-black">New Research Run</h2>
-                  <p className="text-sm text-gray-400 font-bold uppercase tracking-widest">Configure Agent Parameters</p>
-               </div>
-            </div>
-
-            <div className="space-y-6">
-               <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700 ml-1">Research Topic</label>
-                  <Input 
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
-                    placeholder="e.g. Impact of interest rate cuts on REITs..." 
-                    className="h-14 text-lg bg-white/50 border-purple-100 focus-visible:ring-purple-500 rounded-2xl"
-                  />
-               </div>
-
-               <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl border border-gray-100 bg-white/30 cursor-pointer hover:bg-white/50 transition-colors ring-1 ring-black ring-offset-2">
-                     <div className="text-xs text-gray-400 font-bold uppercase mb-1">Mode</div>
-                     <div className="font-bold text-black">Deep Dive</div>
+      <div className="flex-1 flex gap-6 overflow-hidden min-h-0">
+         {/* Left: Research Configuration */}
+         <div className="flex-1 flex flex-col gap-6 overflow-hidden">
+            <GlassCard className="p-10 space-y-10 relative overflow-hidden border-none shadow-xl bg-white/60">
+               <div className="absolute top-0 right-0 w-80 h-80 bg-purple-200 rounded-full blur-[120px] opacity-20 -translate-y-1/2 translate-x-1/3" />
+               
+               <div className="flex items-center gap-6">
+                  <div className="h-16 w-16 rounded-[24px] bg-black flex items-center justify-center text-white shadow-2xl shadow-purple-900/20">
+                     <Bot className="h-8 w-8" />
                   </div>
-                  <div className="p-4 rounded-xl border border-gray-100 bg-white/30 cursor-pointer hover:bg-white/50 transition-colors">
-                     <div className="text-xs text-gray-400 font-bold uppercase mb-1">Timeframe</div>
-                     <div className="font-bold text-black">Last 30 Days</div>
+                  <div>
+                     <h2 className="text-3xl font-bold text-black tracking-tighter">New Research Mission</h2>
+                     <p className="text-xs text-gray-400 font-black uppercase tracking-[0.2em]">Deployment Specification</p>
                   </div>
                </div>
 
-               <Button 
-                 onClick={() => mutation.mutate()}
-                 disabled={mutation.isPending || !topic}
-                 className="w-full h-14 text-lg bg-black hover:bg-zinc-800 text-white btn-pill shadow-xl shadow-black/10"
-               >
-                  {mutation.isPending ? (
-                     <>
-                        <Loader2 className="h-5 w-5 animate-spin mr-2" /> Initializing Agent...
-                     </>
-                  ) : (
-                     <>
-                        Start Analysis <ArrowRight className="h-5 w-5 ml-2" />
-                     </>
-                  )}
-               </Button>
-            </div>
-         </GlassCard>
-
-         {/* Recent Runs List */}
-         <div className="space-y-6">
-            <div className="flex items-center justify-between px-2">
-               <h3 className="font-bold text-gray-500 uppercase tracking-widest text-sm">Recent Runs</h3>
-            </div>
-            
-            {previousRuns.map((run) => (
-               <GlassCard key={run.id} className="p-5 flex items-center gap-4 cursor-pointer hover:bg-white/80 transition-colors group">
-                  <div className={`
-                     h-10 w-10 rounded-full flex items-center justify-center border
-                     ${run.status === 'completed' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : ''}
-                     ${run.status === 'processing' ? 'bg-blue-50 border-blue-100 text-blue-600' : ''}
-                     ${run.status === 'failed' ? 'bg-red-50 border-red-100 text-red-600' : ''}
-                  `}>
-                     {run.status === 'processing' ? <Loader2 className="h-5 w-5 animate-spin" /> : <FileText className="h-5 w-5" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                     <h4 className="font-bold text-sm text-black truncate group-hover:text-purple-700 transition-colors">{run.topic}</h4>
-                     <div className="flex items-center gap-2 text-xs text-gray-400 font-medium mt-0.5">
-                        <Clock className="h-3 w-3" /> {run.date}
+               <div className="space-y-8 max-w-3xl">
+                  <div className="space-y-4">
+                     <div className="flex items-center justify-between px-1">
+                        <label className="text-[10px] font-black text-black uppercase tracking-[0.2em]">Research Objective</label>
+                        <Badge variant="secondary" className="bg-gray-100 text-gray-400 text-[8px] font-black uppercase">Required</Badge>
+                     </div>
+                     <Input 
+                        value={topic}
+                        onChange={(e) => setTopic(e.target.value)}
+                        placeholder="e.g. Synthesize macro impact of Fed rate cuts on Tech equity risk premiums..." 
+                        className="h-16 text-xl bg-white/50 border-gray-100 focus-visible:ring-black rounded-[24px] px-6 shadow-sm font-medium"
+                     />
+                     <div className="flex gap-4">
+                        <Badge variant="outline" className="border-gray-100 text-gray-400 py-1 cursor-pointer hover:border-black transition-colors">&quot;NVIDIA earnings Q4 2025&quot;</Badge>
+                        <Badge variant="outline" className="border-gray-100 text-gray-400 py-1 cursor-pointer hover:border-black transition-colors">&quot;Oil market volatility Q1&quot;</Badge>
                      </div>
                   </div>
-                  <Badge variant={
-                     run.status === 'completed' ? 'success' :
-                     run.status === 'processing' ? 'secondary' : 'destructive'
-                  } className="capitalize text-[10px] px-2">
-                     {run.status}
-                  </Badge>
-               </GlassCard>
-            ))}
 
-            <div className="p-8 rounded-[32px] border border-dashed border-gray-200 flex flex-col items-center justify-center text-center space-y-2 opacity-60">
-               <Bot className="h-8 w-8 text-gray-300" />
-               <p className="text-sm font-bold text-gray-400">Agent Idle</p>
-               <p className="text-xs text-gray-400">Ready for new tasks</p>
+                  <div className="grid grid-cols-3 gap-4">
+                     <ConfigModule label="Model" value="GPT-4 Turbo" icon={<Cpu className="h-3.5 w-3.5" />} active />
+                     <ConfigModule label="Depth" value="Level 4 (High)" icon={<ListFilter className="h-3.5 w-3.5" />} />
+                     <ConfigModule label="Outputs" value="Full Memo + Tool Trace" icon={<FileText className="h-3.5 w-3.5" />} />
+                  </div>
+
+                  <Button 
+                    onClick={() => mutation.mutate()}
+                    disabled={mutation.isPending || !topic}
+                    className="w-full h-16 text-lg bg-black hover:bg-zinc-800 text-white rounded-[24px] shadow-2xl shadow-black/20 group transition-all"
+                  >
+                     {mutation.isPending ? (
+                        <>
+                           <Loader2 className="h-5 w-5 animate-spin mr-3" /> Initializing Neural Pathways...
+                        </>
+                     ) : (
+                        <>
+                           Initialize Research Mission <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                        </>
+                     )}
+                  </Button>
+               </div>
+            </GlassCard>
+            
+            <div className="p-8 rounded-[40px] border-2 border-dashed border-gray-100 flex flex-col items-center justify-center text-center space-y-3 opacity-40">
+               <Zap className="h-10 w-10 text-gray-300" />
+               <p className="text-sm font-black uppercase tracking-widest text-gray-400">Real-time Memo Generation Surface</p>
+               <p className="text-xs font-bold text-gray-300">Start a mission to visualize agentic synthesis</p>
             </div>
+         </div>
+
+         {/* Right: Mission History Ledger */}
+         <div className="w-[400px] flex flex-col gap-4 overflow-hidden">
+            <GlassCard className="p-0 flex-1 flex flex-col overflow-hidden border-none shadow-xl">
+               <div className="p-4 border-b border-gray-100 bg-white/60 backdrop-blur-md flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                     <Clock className="h-4 w-4 text-gray-400" />
+                     <span className="text-xs font-bold text-black uppercase tracking-widest">Mission Ledger</span>
+                  </div>
+                  <Badge variant="outline" className="text-[9px] border-gray-100 font-bold uppercase text-gray-400 px-2 h-5">History</Badge>
+               </div>
+               
+               <div className="flex-1 overflow-y-auto divide-y divide-gray-50 custom-scrollbar">
+                  {previousRuns.map((run) => (
+                     <div key={run.id} className="p-5 flex items-start gap-4 cursor-pointer hover:bg-gray-50/50 transition-all group border-l-4 border-transparent hover:border-black">
+                        <div className={`
+                           h-10 w-10 rounded-xl flex items-center justify-center border-2
+                           ${run.status === 'completed' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : ''}
+                           ${run.status === 'processing' ? 'bg-blue-50 border-blue-100 text-blue-600' : ''}
+                           ${run.status === 'failed' ? 'bg-red-50 border-red-100 text-red-600' : ''}
+                        `}>
+                           {run.status === 'processing' ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+                        </div>
+                        <div className="flex-1 min-w-0 space-y-1">
+                           <h4 className="font-bold text-sm text-black truncate group-hover:text-blue-700 transition-colors">{run.topic}</h4>
+                           <div className="flex items-center gap-3 text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
+                              <span className="text-gray-300">{run.model}</span>
+                              <span className="text-gray-200">•</span>
+                              <span>{format(new Date(run.date), 'MMM d, HH:mm')}</span>
+                           </div>
+                        </div>
+                        <Badge variant={
+                           run.status === 'completed' ? 'success' :
+                           run.status === 'processing' ? 'secondary' : 'destructive'
+                        } className="capitalize text-[9px] h-5 px-1.5 font-black">
+                           {run.status}
+                        </Badge>
+                     </div>
+                  ))}
+               </div>
+            </GlassCard>
          </div>
       </div>
     </div>
   );
+}
+
+function ConfigModule({ label, value, icon, active }: any) {
+  return (
+    <div className={`
+       p-4 rounded-[24px] border-2 transition-all cursor-pointer
+       ${active ? 'bg-black border-black text-white shadow-xl shadow-black/10' : 'bg-white/40 border-gray-50 text-black hover:border-gray-200'}
+    `}>
+       <div className="flex items-center gap-2 mb-2">
+          <div className={`h-6 w-6 rounded-lg flex items-center justify-center ${active ? 'bg-white/20' : 'bg-black/5'}`}>
+             {icon}
+          </div>
+          <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${active ? 'text-white/60' : 'text-gray-300'}`}>{label}</span>
+       </div>
+       <div className="text-xs font-bold truncate">{value}</div>
+    </div>
+  )
 }
