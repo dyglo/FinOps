@@ -34,6 +34,7 @@ class IngestionJob(Base, OrgScopedMixin, TimestampMixin):
     status: Mapped[str] = mapped_column(String(32), nullable=False, default='queued')
     idempotency_key: Mapped[str] = mapped_column(String(128), nullable=False)
     payload: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False, default=dict)
+    schema_version: Mapped[str] = mapped_column(String(32), nullable=False, default='v1')
     attempt_count: Mapped[int] = mapped_column(default=0, nullable=False)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -58,6 +59,7 @@ class IngestionRawPayload(Base, OrgScopedMixin):
     job_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False, index=True)
     provider: Mapped[str] = mapped_column(String(64), nullable=False)
     resource: Mapped[str] = mapped_column(String(128), nullable=False)
+    schema_version: Mapped[str] = mapped_column(String(32), nullable=False, default='v1')
     content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     request_payload: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False, default=dict)
     response_payload: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False, default=dict)
@@ -68,6 +70,7 @@ class IngestionRawPayload(Base, OrgScopedMixin):
     __table_args__ = (
         Index('ix_ingestion_raw_payloads_org_job', 'org_id', 'job_id'),
         Index('ix_ingestion_raw_payloads_org_content_hash', 'org_id', 'content_hash'),
+        Index('ix_ingestion_raw_payloads_org_fetched_at', 'org_id', 'fetched_at'),
         Index(
             'uq_ingestion_raw_payloads_org_provider_content_hash',
             'org_id',
@@ -85,6 +88,7 @@ class NewsDocument(Base, OrgScopedMixin):
     job_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False, index=True)
     raw_payload_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False, index=True)
     source_provider: Mapped[str] = mapped_column(String(64), nullable=False)
+    normalization_version: Mapped[str] = mapped_column(String(32), nullable=False, default='v1')
     source_url: Mapped[str] = mapped_column(Text, nullable=False)
     title: Mapped[str] = mapped_column(Text, nullable=False)
     snippet: Mapped[str] = mapped_column(Text, nullable=False)
@@ -97,6 +101,7 @@ class NewsDocument(Base, OrgScopedMixin):
     __table_args__ = (
         Index('ix_news_documents_org_job', 'org_id', 'job_id'),
         Index('ix_news_documents_org_published_at', 'org_id', 'published_at'),
+        Index('ix_news_documents_org_created_at', 'org_id', 'created_at'),
         Index(
             'uq_news_documents_org_provider_url_document_hash',
             'org_id',

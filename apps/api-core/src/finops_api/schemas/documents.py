@@ -11,6 +11,7 @@ class NewsDocumentRead(BaseModel):
     org_id: UUID
     job_id: UUID
     source_provider: str
+    normalization_version: str
     source_url: str
     title: str
     snippet: str

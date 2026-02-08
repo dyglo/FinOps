@@ -30,6 +30,7 @@ class IngestionRawPayloadRepository:
             job_id=job_id,
             provider=provider,
             resource=resource,
+            schema_version='v1',
             content_hash=content_hash,
             request_payload=request_payload,
             response_payload=response_payload,

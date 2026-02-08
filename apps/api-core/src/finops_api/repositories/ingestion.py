@@ -31,6 +31,7 @@ class IngestionRepository:
             resource=payload.resource,
             idempotency_key=payload.idempotency_key,
             payload=payload.payload,
+            schema_version='v1',
             status='queued',
             attempt_count=0,
         )

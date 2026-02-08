@@ -26,6 +26,7 @@ class JobRecord:
     status: str
     idempotency_key: str
     payload: dict[str, object]
+    schema_version: str
     attempt_count: int
     error_message: str | None
     started_at: datetime | None
@@ -63,6 +64,7 @@ class FakeIngestionRepository:
             status='queued',
             idempotency_key=payload.idempotency_key,
             payload=payload.payload,
+            schema_version='v1',
             attempt_count=0,
             error_message=None,
             started_at=None,

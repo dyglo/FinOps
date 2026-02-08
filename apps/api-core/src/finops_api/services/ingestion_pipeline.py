@@ -114,6 +114,7 @@ async def process_ingestion_job(
                         job_id=job.id,
                         raw_payload_id=raw_payload.id,
                         source_provider=normalized.source_provider,
+                        normalization_version='v1',
                         source_url=normalized.source_url,
                         title=normalized.title,
                         snippet=normalized.snippet,

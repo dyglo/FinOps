@@ -22,6 +22,7 @@ class IngestionJobRead(BaseModel):
     status: str
     idempotency_key: str
     payload: dict[str, Any]
+    schema_version: str
     attempt_count: int
     error_message: str | None
     started_at: datetime | None
