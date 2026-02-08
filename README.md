@@ -23,6 +23,19 @@ Institutional-grade finance intelligence platform scaffolding.
 - Engineering standards: `docs/engineering-standards.md`
 - Phase roadmap: `docs/phases.md`
 
+## Phase 1 Swagger Demo
+1. Start stack: `docker compose up --build`.
+2. Open API docs: `http://localhost:8000/docs`.
+3. Call `POST /v1/ingestion/jobs` with:
+   - Header: `X-Org-Id: <tenant-uuid>`
+   - Body:
+     - `provider: "tavily"`
+     - `resource: "news_search"`
+     - `idempotency_key: "<unique-key>"`
+     - `payload: {"query":"nvidia earnings","max_results":5}`
+4. Poll `GET /v1/ingestion/jobs/{job_id}` until `status=completed`.
+5. Read normalized results with `GET /v1/documents/news?job_id=<job_id>`.
+
 ## Architecture Notes
 - Multi-tenant by default via required `X-Org-Id` header and `org_id`-scoped tables.
 - Deterministic pipelines and auditable AI run ledger are first-class concerns.
