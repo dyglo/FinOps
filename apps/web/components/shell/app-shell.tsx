@@ -1,20 +1,35 @@
+'use client';
+
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-
 import { NavLinks } from '@/components/shell/nav-links';
+import { Button } from '@/components/ui/button';
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[radial-gradient(100rem_50rem_at_100%_-10%,rgba(26,81,132,0.16),transparent),linear-gradient(180deg,var(--bg-top),var(--bg-bottom))] text-[var(--text-base)]">
-      <header className="sticky top-0 z-20 border-b border-[var(--line-soft)] bg-[color:var(--surface-0)]/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 md:px-8">
-          <Link href="/" className="font-semibold tracking-wide text-[var(--text-strong)]">
-            FinOps Intelligence
-          </Link>
-          <NavLinks />
+    <div className="min-h-screen hero-gradient selection:bg-emerald-100">
+      <header className="sticky top-0 z-50 w-full px-6 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <div className="flex items-center gap-12">
+            <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tight text-black">
+              <div className="h-2 w-2 rounded-full bg-emerald-500" />
+              FinOps
+            </Link>
+            <div className="hidden md:block">
+              <NavLinks />
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" className="hidden font-medium md:flex btn-pill">
+              Sign In
+            </Button>
+            <Button className="bg-black text-white hover:bg-zinc-800 btn-pill px-6">
+              Free Trial
+            </Button>
+          </div>
         </div>
       </header>
-      <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">{children}</div>
+      <main className="mx-auto max-w-7xl px-6">{children}</main>
     </div>
   );
 }

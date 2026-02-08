@@ -21,7 +21,7 @@ export const IngestionJobReadSchema = z.object({
   resource: z.string(),
   status: z.enum(['pending', 'processing', 'completed', 'failed']),
   idempotency_key: z.string(),
-  payload: z.record(z.unknown()),
+  payload: z.record(z.string(), z.unknown()),
   attempt_count: z.number(),
   error_message: z.string().nullable(),
   started_at: z.string().nullable(),

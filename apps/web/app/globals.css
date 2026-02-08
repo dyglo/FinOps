@@ -1,16 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --bg-top: #f1f6fb;
-  --bg-bottom: #fcfdff;
-  --surface-0: #f8fbff;
-  --surface-1: #ffffff;
-  --surface-2: #eef4fb;
-  --line-soft: #d8e2ee;
-  --line-strong: #9bb0c8;
-  --text-base: #243142;
-  --text-strong: #0e2035;
-  --text-muted: #516377;
+  --bg-main: #ffffff;
+  --accent-mint: #dcfce7;
+  --accent-blue: #e0f2fe;
+  --accent-purple: #f3e8ff;
+  --text-strong: #000000;
+  --text-base: #4b5563;
+  --text-muted: #9ca3af;
+  --radius-pill: 9999px;
+  --font-display: "Geist", "Inter", sans-serif;
 }
 
 * {
@@ -19,10 +18,32 @@
 
 body {
   margin: 0;
-  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  font-family: var(--font-display);
+  background-color: var(--bg-main);
+  color: var(--text-base);
+  -webkit-font-smoothing: antialiased;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+.hero-gradient {
+  background: radial-gradient(circle at 50% -20%, #d1fae5 0%, #e0f2fe 35%, #ffffff 70%);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+}
+
+.btn-pill {
+  border-radius: var(--radius-pill);
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 10s linear infinite;
 }
