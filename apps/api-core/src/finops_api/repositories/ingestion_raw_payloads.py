@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from finops_api.models import IngestionRawPayload
@@ -45,3 +45,10 @@ class IngestionRawPayloadRepository:
         stmt = select(IngestionRawPayload).where(IngestionRawPayload.id == raw_payload_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def count_by_job(self, *, job_id: UUID) -> int:
+        stmt = select(func.count(IngestionRawPayload.id)).where(
+            IngestionRawPayload.job_id == job_id
+        )
+        result = await self.session.execute(stmt)
+        return int(result.scalar_one())

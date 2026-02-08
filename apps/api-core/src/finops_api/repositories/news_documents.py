@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import desc, select
+from sqlalchemy import desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from finops_api.models import NewsDocument
@@ -26,5 +26,31 @@ class NewsDocumentRepository:
             .order_by(desc(NewsDocument.created_at))
             .limit(limit)
         )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def count_by_job(self, *, job_id: UUID) -> int:
+        stmt = select(func.count(NewsDocument.id)).where(NewsDocument.job_id == job_id)
+        result = await self.session.execute(stmt)
+        return int(result.scalar_one())
+
+    async def list_news(
+        self,
+        *,
+        job_id: UUID | None,
+        q: str | None,
+        limit: int,
+        offset: int,
+    ) -> list[NewsDocument]:
+        stmt = select(NewsDocument)
+        if job_id is not None:
+            stmt = stmt.where(NewsDocument.job_id == job_id)
+        if q:
+            pattern = f'%{q.strip()}%'
+            stmt = stmt.where(
+                or_(NewsDocument.title.ilike(pattern), NewsDocument.snippet.ilike(pattern))
+            )
+
+        stmt = stmt.order_by(desc(NewsDocument.created_at)).offset(offset).limit(limit)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
