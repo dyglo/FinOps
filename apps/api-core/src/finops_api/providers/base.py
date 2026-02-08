@@ -33,7 +33,15 @@ class ProviderResponse:
 
 
 class SearchProvider(Protocol):
-    async def fetch_news(
+    async def search_news(
+        self,
+        *,
+        idempotency_key: str,
+        request_payload: dict[str, object],
+    ) -> ProviderResponse:
+        ...
+
+    async def search_web(
         self,
         *,
         idempotency_key: str,
