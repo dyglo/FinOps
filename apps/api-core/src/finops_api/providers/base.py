@@ -48,3 +48,21 @@ class SearchProvider(Protocol):
         request_payload: dict[str, object],
     ) -> ProviderResponse:
         ...
+
+
+class MarketDataProvider(Protocol):
+    async def get_quote(
+        self,
+        *,
+        idempotency_key: str,
+        request_payload: dict[str, object],
+    ) -> ProviderResponse:
+        ...
+
+    async def get_timeseries(
+        self,
+        *,
+        idempotency_key: str,
+        request_payload: dict[str, object],
+    ) -> ProviderResponse:
+        ...

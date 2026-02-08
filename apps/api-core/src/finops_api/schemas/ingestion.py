@@ -11,16 +11,16 @@ class IngestionJobCreate(BaseModel):
     model_config = ConfigDict(
         json_schema_extra={
             'example': {
-                'provider': 'tavily',
-                'resource': 'news_search',
-                'idempotency_key': 'news-nvda-20260208-001',
-                'payload': {'query': 'nvidia earnings', 'max_results': 8},
+                'provider': 'twelvedata',
+                'resource': 'market_timeseries_backfill',
+                'idempotency_key': 'mkt-aapl-1day-20260209-001',
+                'payload': {'symbol': 'AAPL', 'interval': '1day', 'outputsize': 30},
             }
         }
     )
 
-    provider: Literal['tavily', 'serper', 'serpapi']
-    resource: Literal['news_search']
+    provider: Literal['tavily', 'serper', 'serpapi', 'twelvedata']
+    resource: Literal['news_search', 'market_timeseries_backfill', 'market_quote_refresh']
     idempotency_key: str = Field(min_length=4, max_length=128)
     payload: dict[str, Any] = Field(default_factory=dict)
 

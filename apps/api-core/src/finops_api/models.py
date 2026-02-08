@@ -150,14 +150,70 @@ class MarketTimeseries(Base, OrgScopedMixin):
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
     symbol: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
     timeframe: Mapped[str] = mapped_column(String(16), nullable=False)
+    provider: Mapped[str] = mapped_column(String(64), nullable=False, default='unknown')
+    schema_version: Mapped[str] = mapped_column(String(32), nullable=False, default='v1')
+    raw_payload_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        nullable=True,
+        index=True,
+    )
     ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     open: Mapped[float] = mapped_column(Float, nullable=False)
     high: Mapped[float] = mapped_column(Float, nullable=False)
     low: Mapped[float] = mapped_column(Float, nullable=False)
     close: Mapped[float] = mapped_column(Float, nullable=False)
     volume: Mapped[float] = mapped_column(Float, nullable=False)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    __table_args__ = (Index('ix_market_timeseries_org_symbol_ts', 'org_id', 'symbol', 'ts'),)
+    __table_args__ = (
+        Index('ix_market_timeseries_org_symbol_ts', 'org_id', 'symbol', 'ts'),
+        Index(
+            'ix_market_timeseries_org_symbol_timeframe_ts',
+            'org_id',
+            'symbol',
+            'timeframe',
+            'ts',
+        ),
+        Index(
+            'uq_market_timeseries_org_provider_symbol_timeframe_ts',
+            'org_id',
+            'provider',
+            'symbol',
+            'timeframe',
+            'ts',
+            unique=True,
+        ),
+    )
+
+
+class MarketQuote(Base, OrgScopedMixin):
+    __tablename__ = 'market_quotes'
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
+    symbol: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    provider: Mapped[str] = mapped_column(String(64), nullable=False)
+    schema_version: Mapped[str] = mapped_column(String(32), nullable=False, default='v1')
+    raw_payload_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        nullable=True,
+        index=True,
+    )
+    price: Mapped[float] = mapped_column(Float, nullable=False)
+    change_percent: Mapped[float | None] = mapped_column(Float, nullable=True)
+    as_of: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        Index('ix_market_quotes_org_symbol_as_of', 'org_id', 'symbol', 'as_of'),
+        Index(
+            'uq_market_quotes_org_provider_symbol_as_of',
+            'org_id',
+            'provider',
+            'symbol',
+            'as_of',
+            unique=True,
+        ),
+    )
 
 
 class SignalFeature(Base, OrgScopedMixin, TimestampMixin):

@@ -9,8 +9,8 @@ from sqlalchemy import text
 from finops_api.config import get_settings
 from finops_api.db import SessionLocal
 from finops_api.models import NewsDocument
-from finops_api.providers.base import ProviderError
-from finops_api.providers.registry import get_search_provider
+from finops_api.providers.base import ProviderError, ProviderResponse
+from finops_api.providers.registry import get_market_data_provider, get_search_provider
 from finops_api.providers.serpapi.dto import SerpApiSearchResponse
 from finops_api.providers.serpapi.mapper import (
     to_canonical_news_item as serpapi_to_canonical_news_item,
@@ -23,8 +23,14 @@ from finops_api.providers.tavily.dto import TavilySearchResponse
 from finops_api.providers.tavily.mapper import (
     to_canonical_news_item as tavily_to_canonical_news_item,
 )
+from finops_api.providers.twelvedata.dto import (
+    TwelveDataQuoteResponse,
+    TwelveDataTimeseriesResponse,
+)
+from finops_api.providers.twelvedata.mapper import to_canonical_quote, to_canonical_timeseries
 from finops_api.repositories.ingestion import IngestionRepository
 from finops_api.repositories.ingestion_raw_payloads import IngestionRawPayloadRepository
+from finops_api.repositories.market import MarketRepository
 from finops_api.repositories.news_documents import NewsDocumentRepository
 from finops_api.services.cache import (
     get_cached_payload,
@@ -43,6 +49,8 @@ def _provider_rate_limit_per_minute(provider: str) -> int:
         return settings.serper_rate_limit_per_minute
     if provider == 'serpapi':
         return settings.serpapi_rate_limit_per_minute
+    if provider == 'twelvedata':
+        return settings.twelvedata_rate_limit_per_minute
     return 0
 
 
@@ -150,6 +158,7 @@ async def process_ingestion_job(
         ingestion_repo = IngestionRepository(session)
         raw_repo = IngestionRawPayloadRepository(session)
         news_repo = NewsDocumentRepository(session)
+        market_repo = MarketRepository(session)
 
         job = await ingestion_repo.get(job_id)
         if job is None:
@@ -177,6 +186,7 @@ async def process_ingestion_job(
             cache_hit = cached_payload is not None
 
             if cached_payload is None:
+                provider_response: ProviderResponse
                 allowed = await take_provider_token(
                     redis_client,
                     provider=job.provider,
@@ -186,11 +196,31 @@ async def process_ingestion_job(
                 if not allowed:
                     raise ProviderError(f'Provider rate limit exceeded for {job.provider}')
 
-                adapter = get_search_provider(job.provider)
-                provider_response = await adapter.search_news(
-                    idempotency_key=job.idempotency_key,
-                    request_payload=job.payload,
-                )
+                if job.resource == 'news_search':
+                    search_adapter = get_search_provider(job.provider)
+                    provider_response = await search_adapter.search_news(
+                        idempotency_key=job.idempotency_key,
+                        request_payload=job.payload,
+                    )
+                elif job.resource == 'market_timeseries_backfill':
+                    market_adapter = get_market_data_provider(job.provider)
+                    provider_response = await market_adapter.get_timeseries(
+                        idempotency_key=job.idempotency_key,
+                        request_payload=job.payload,
+                    )
+                elif job.resource == 'market_quote_refresh':
+                    market_adapter = get_market_data_provider(job.provider)
+                    provider_response = await market_adapter.get_quote(
+                        idempotency_key=job.idempotency_key,
+                        request_payload=job.payload,
+                    )
+                else:
+                    raise ProviderError(
+                        f'Unsupported ingestion resource: {job.resource}',
+                        code='resource_unsupported',
+                        provider=job.provider,
+                        retryable=False,
+                    )
                 cached_payload = provider_response.payload
                 await set_cached_payload(
                     redis_client,
@@ -212,23 +242,49 @@ async def process_ingestion_job(
                 provider_request_id=None,
             )
 
-            documents = _build_documents(
-                org_id=org_id,
-                job_id=job.id,
-                raw_payload_id=raw_payload.id,
-                provider=job.provider,
-                cached_payload=cached_payload,
-            )
-
-            if documents:
-                await news_repo.create_many(documents)
+            normalized_count = 0
+            if job.resource == 'news_search':
+                documents = _build_documents(
+                    org_id=org_id,
+                    job_id=job.id,
+                    raw_payload_id=raw_payload.id,
+                    provider=job.provider,
+                    cached_payload=cached_payload,
+                )
+                if documents:
+                    await news_repo.create_many(documents)
+                normalized_count = len(documents)
+            elif job.resource == 'market_timeseries_backfill':
+                timeseries_response = TwelveDataTimeseriesResponse.model_validate(cached_payload)
+                rows = [row.model_dump() for row in to_canonical_timeseries(timeseries_response)]
+                normalized_count = await market_repo.upsert_timeseries_rows(
+                    org_id=org_id,
+                    provider=job.provider,
+                    schema_version='v1',
+                    raw_payload_id=raw_payload.id,
+                    rows=rows,
+                )
+            elif job.resource == 'market_quote_refresh':
+                quote_response = TwelveDataQuoteResponse.model_validate(cached_payload)
+                quote = to_canonical_quote(quote_response)
+                await market_repo.upsert_quote(
+                    org_id=org_id,
+                    provider=job.provider,
+                    schema_version='v1',
+                    raw_payload_id=raw_payload.id,
+                    symbol=quote.symbol,
+                    price=quote.price,
+                    change_percent=quote.change_percent,
+                    as_of=quote.as_of,
+                )
+                normalized_count = 1
 
             await ingestion_repo.mark_completed(job)
 
             return {
                 'status': 'completed',
                 'job_id': str(job.id),
-                'normalized_count': len(documents),
+                'normalized_count': normalized_count,
                 'cache_hit': cache_hit,
             }
         except Exception as exc:
