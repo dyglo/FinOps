@@ -9,6 +9,16 @@ from sqlalchemy import text
 from finops_api.config import get_settings
 from finops_api.db import SessionLocal
 from finops_api.models import NewsDocument
+from finops_api.providers.alphavantage.dto import (
+    AlphaVantageQuoteResponse,
+    AlphaVantageTimeseriesResponse,
+)
+from finops_api.providers.alphavantage.mapper import (
+    to_canonical_quote as alphavantage_to_canonical_quote,
+)
+from finops_api.providers.alphavantage.mapper import (
+    to_canonical_timeseries as alphavantage_to_canonical_timeseries,
+)
 from finops_api.providers.base import ProviderError, ProviderResponse
 from finops_api.providers.registry import get_market_data_provider, get_search_provider
 from finops_api.providers.serpapi.dto import SerpApiSearchResponse
@@ -51,6 +61,8 @@ def _provider_rate_limit_per_minute(provider: str) -> int:
         return settings.serpapi_rate_limit_per_minute
     if provider == 'twelvedata':
         return settings.twelvedata_rate_limit_per_minute
+    if provider == 'alphavantage':
+        return settings.alphavantage_rate_limit_per_minute
     return 0
 
 
@@ -255,8 +267,35 @@ async def process_ingestion_job(
                     await news_repo.create_many(documents)
                 normalized_count = len(documents)
             elif job.resource == 'market_timeseries_backfill':
-                timeseries_response = TwelveDataTimeseriesResponse.model_validate(cached_payload)
-                rows = [row.model_dump() for row in to_canonical_timeseries(timeseries_response)]
+                if job.provider == 'twelvedata':
+                    twelvedata_timeseries = TwelveDataTimeseriesResponse.model_validate(
+                        cached_payload
+                    )
+                    rows = [
+                        row.model_dump()
+                        for row in to_canonical_timeseries(twelvedata_timeseries)
+                    ]
+                elif job.provider == 'alphavantage':
+                    av_timeseries_response = AlphaVantageTimeseriesResponse.model_validate(
+                        cached_payload
+                    )
+                    symbol = str(job.payload.get('symbol', '')).upper()
+                    interval = str(job.payload.get('interval', '1day'))
+                    rows = [
+                        row.model_dump()
+                        for row in alphavantage_to_canonical_timeseries(
+                            av_timeseries_response,
+                            symbol=symbol,
+                            timeframe=interval,
+                        )
+                    ]
+                else:
+                    raise ProviderError(
+                        f'Unsupported market provider for timeseries: {job.provider}',
+                        code='provider_unsupported',
+                        provider=job.provider,
+                        retryable=False,
+                    )
                 normalized_count = await market_repo.upsert_timeseries_rows(
                     org_id=org_id,
                     provider=job.provider,
@@ -265,17 +304,36 @@ async def process_ingestion_job(
                     rows=rows,
                 )
             elif job.resource == 'market_quote_refresh':
-                quote_response = TwelveDataQuoteResponse.model_validate(cached_payload)
-                quote = to_canonical_quote(quote_response)
+                if job.provider == 'twelvedata':
+                    twelvedata_quote = TwelveDataQuoteResponse.model_validate(cached_payload)
+                    mapped_quote = to_canonical_quote(twelvedata_quote)
+                    canonical_symbol = mapped_quote.symbol
+                    canonical_price = mapped_quote.price
+                    canonical_change_percent = mapped_quote.change_percent
+                    canonical_as_of = mapped_quote.as_of
+                elif job.provider == 'alphavantage':
+                    av_quote_response = AlphaVantageQuoteResponse.model_validate(cached_payload)
+                    av_quote = alphavantage_to_canonical_quote(av_quote_response)
+                    canonical_symbol = av_quote.symbol
+                    canonical_price = av_quote.price
+                    canonical_change_percent = av_quote.change_percent
+                    canonical_as_of = av_quote.as_of
+                else:
+                    raise ProviderError(
+                        f'Unsupported market provider for quote: {job.provider}',
+                        code='provider_unsupported',
+                        provider=job.provider,
+                        retryable=False,
+                    )
                 await market_repo.upsert_quote(
                     org_id=org_id,
                     provider=job.provider,
                     schema_version='v1',
                     raw_payload_id=raw_payload.id,
-                    symbol=quote.symbol,
-                    price=quote.price,
-                    change_percent=quote.change_percent,
-                    as_of=quote.as_of,
+                    symbol=canonical_symbol,
+                    price=canonical_price,
+                    change_percent=canonical_change_percent,
+                    as_of=canonical_as_of,
                 )
                 normalized_count = 1
 

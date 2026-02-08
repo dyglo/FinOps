@@ -404,3 +404,50 @@ def test_ingestion_market_timeseries_job_counts(monkeypatch) -> None:
         assert data['normalized_record_count'] == 30
     finally:
         app.dependency_overrides.clear()
+
+
+def test_ingestion_market_quote_job_counts_for_alphavantage(monkeypatch) -> None:
+    InMemoryStore.jobs.clear()
+    InMemoryStore.raw_counts.clear()
+    InMemoryStore.news_counts.clear()
+    InMemoryStore.market_timeseries_counts.clear()
+    InMemoryStore.market_quote_counts.clear()
+
+    monkeypatch.setattr('finops_api.routers.ingestion.IngestionRepository', FakeIngestionRepository)
+    monkeypatch.setattr(
+        'finops_api.routers.ingestion.IngestionRawPayloadRepository',
+        FakeIngestionRawPayloadRepository,
+    )
+    monkeypatch.setattr(
+        'finops_api.routers.ingestion.NewsDocumentRepository',
+        FakeNewsDocumentRepository,
+    )
+    monkeypatch.setattr(
+        'finops_api.routers.ingestion.MarketRepository',
+        FakeMarketRepository,
+    )
+    monkeypatch.setattr(
+        'finops_api.routers.ingestion.enqueue_ingestion_job',
+        fake_enqueue_ingestion_job,
+    )
+
+    app.dependency_overrides[get_tenant_session] = override_tenant_session
+    try:
+        client = TestClient(app)
+        headers = {'X-Org-Id': '00000000-0000-0000-0000-000000000001'}
+        create_resp = client.post(
+            '/v1/ingestion/jobs',
+            headers=headers,
+            json={
+                'provider': 'alphavantage',
+                'resource': 'market_quote_refresh',
+                'idempotency_key': 'idem-market-quote-av-1',
+                'payload': {'symbol': 'AAPL'},
+            },
+        )
+        assert create_resp.status_code == 200
+        data = create_resp.json()['data']
+        assert data['provider'] == 'alphavantage'
+        assert data['normalized_record_count'] == 1
+    finally:
+        app.dependency_overrides.clear()

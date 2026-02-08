@@ -5,6 +5,7 @@ import os
 import pytest
 
 from finops_api.config import get_settings
+from finops_api.providers.alphavantage.client import AlphaVantageAdapter
 from finops_api.providers.base import ProviderError
 from finops_api.providers.registry import get_market_data_provider, get_search_provider
 from finops_api.providers.serpapi.client import SerpApiAdapter
@@ -49,3 +50,10 @@ def test_registry_resolves_twelvedata_provider() -> None:
 def test_market_registry_rejects_unknown_provider() -> None:
     with pytest.raises(ProviderError, match='Unsupported market data provider'):
         get_market_data_provider('unknown')
+
+
+def test_registry_resolves_alphavantage_provider() -> None:
+    os.environ['ALPHA_VANTAGE_API_KEY'] = 'test-key'
+    get_settings.cache_clear()
+    provider = get_market_data_provider('alphavantage')
+    assert isinstance(provider, AlphaVantageAdapter)

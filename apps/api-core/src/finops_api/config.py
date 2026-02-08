@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     serper_api_key: str = Field(default='', alias='SERPER_API_KEY')
     serpapi_api_key: str = Field(default='', alias='SERPAPI_API_KEY')
     twelve_data_api_key: str = Field(default='', alias='TWELVE_DATA_API_KEY')
+    alpha_vantage_api_key: str = Field(default='', alias='ALPHA_VANTAGE_API_KEY')
     provider_cache_ttl_seconds: int = Field(default=300, alias='PROVIDER_CACHE_TTL_SECONDS')
     tavily_rate_limit_per_minute: int = Field(default=30, alias='TAVILY_RATE_LIMIT_PER_MINUTE')
     serper_rate_limit_per_minute: int = Field(default=30, alias='SERPER_RATE_LIMIT_PER_MINUTE')
@@ -31,6 +32,10 @@ class Settings(BaseSettings):
     twelvedata_rate_limit_per_minute: int = Field(
         default=60,
         alias='TWELVEDATA_RATE_LIMIT_PER_MINUTE',
+    )
+    alphavantage_rate_limit_per_minute: int = Field(
+        default=5,
+        alias='ALPHAVANTAGE_RATE_LIMIT_PER_MINUTE',
     )
     provider_timeout_seconds: float = Field(default=10.0, alias='PROVIDER_TIMEOUT_SECONDS')
     provider_max_retries: int = Field(default=3, alias='PROVIDER_MAX_RETRIES')
