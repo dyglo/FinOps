@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "finops-api-core"
+version = "0.1.0"
+description = "FinOps API Core"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.128.4,<0.129.0",
+  "uvicorn[standard]>=0.40.0,<0.41.0",
+  "pydantic>=2.12.5,<2.13.0",
+  "pydantic-settings>=2.11.0,<2.12.0",
+  "sqlalchemy>=2.0.46,<2.1.0",
+  "asyncpg>=0.31.0,<0.32.0",
+  "pgvector>=0.4.1,<0.5.0",
+  "alembic>=1.17.1,<1.18.0",
+  "redis>=5.2.1,<6.0.0",
+  "arq>=0.27.0,<0.28.0",
+  "httpx>=0.28.1,<0.29.0",
+  "structlog>=25.4.0,<25.5.0",
+  "python-json-logger>=4.0.0,<4.1.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.4.2,<8.5.0",
+  "pytest-asyncio>=1.2.0,<1.3.0",
+  "ruff>=0.14.3,<0.15.0",
+  "mypy>=1.18.2,<1.19.0",
+  "types-redis>=4.6.0.20241004"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "ASYNC"]
+ignore = ["B008"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+
+[[tool.mypy.overrides]]
+module = ["pgvector.*"]
+ignore_missing_imports = true
