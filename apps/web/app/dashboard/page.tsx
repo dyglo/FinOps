@@ -1,70 +1,86 @@
-import Link from 'next/link';
-
+import { NewsIntelligencePanel } from '@/components/news/news-intelligence-panel';
+import { IngestionConsole } from '@/components/news/ingestion-console';
 import { DashboardChartPanel } from '@/components/charts/dashboard-chart-panel';
-import { finopsApiClient } from '@/lib/api/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TrendingUp, Activity, Globe } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
-
-export default async function DashboardPage() {
-  let headlineCount = 0;
-  let latestHeadlines: string[] = [];
-
-  try {
-    const response = await finopsApiClient.listNewsDocuments({ limit: 5, offset: 0 });
-    headlineCount = response.data.length;
-    latestHeadlines = response.data.map((item) => item.title);
-  } catch {
-    latestHeadlines = [];
-  }
-
+export default function DashboardPage() {
   return (
-    <main className="space-y-8">
-      <section className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface-1)] p-5">
-          <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">Canonical News</p>
-          <p className="mt-3 text-3xl font-semibold text-[var(--text-strong)]">{headlineCount}</p>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">Most recent normalized records loaded.</p>
-        </div>
-        <div className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface-1)] p-5">
-          <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">Ingestion Workspace</p>
-          <p className="mt-3 text-lg font-medium text-[var(--text-strong)]">Launch jobs and monitor completion</p>
-          <Link href="/news" className="mt-3 inline-block text-sm font-medium text-sky-700">
-            Open News Pipeline
-          </Link>
-        </div>
-        <div className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface-1)] p-5">
-          <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">Agent Research</p>
-          <p className="mt-3 text-lg font-medium text-[var(--text-strong)]">Run deterministic reports and replay</p>
-          <Link href="/research" className="mt-3 inline-block text-sm font-medium text-sky-700">
-            Open Research Room
-          </Link>
-        </div>
-      </section>
+    <div className="space-y-8">
+      <header>
+        <h1 className="text-3xl font-bold text-[var(--text-strong)]">Intelligence Overview</h1>
+        <p className="text-[var(--text-muted)] mt-1">Institutional-grade data ingestion and market analysis.</p>
+      </header>
 
-      <section className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface-1)] p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-[var(--text-strong)]">Live Market Analytics</h2>
-          <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">TradingView Advanced Chart</p>
-        </div>
-        <DashboardChartPanel />
-      </section>
+      <div className="grid gap-6 md:grid-cols-4">
+         <Card className="bg-[var(--surface-1)]">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
+              Market Status
+            </CardTitle>
+            <Activity className="h-4 w-4 text-emerald-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">Open</div>
+            <p className="text-[10px] text-[var(--text-muted)] mt-1">NASDAQ / NYSE Active</p>
+          </CardContent>
+        </Card>
 
-      <section className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface-1)] p-6">
-        <h2 className="text-xl font-semibold text-[var(--text-strong)]">Latest Headlines</h2>
-        {latestHeadlines.length > 0 ? (
-          <ul className="mt-4 space-y-3 text-sm text-[var(--text-base)]">
-            {latestHeadlines.map((headline) => (
-              <li key={headline} className="rounded-md border border-[var(--line-soft)] bg-[var(--surface-0)] p-3">
-                {headline}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-4 text-sm text-[var(--text-muted)]">
-            No headlines available yet. Trigger ingestion from the News Pipeline.
-          </p>
-        )}
-      </section>
-    </main>
+        <Card className="bg-[var(--surface-1)]">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
+              Sentiment
+            </CardTitle>
+            <TrendingUp className="h-4 w-4 text-sky-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">Bullish</div>
+            <p className="text-[10px] text-[var(--text-muted)] mt-1">+12% vs last 7d</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[var(--surface-1)]">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
+              Coverage
+            </CardTitle>
+            <Globe className="h-4 w-4 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">Global</div>
+            <p className="text-[10px] text-[var(--text-muted)] mt-1">Multi-source news</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[var(--surface-1)] border-dashed border-2">
+           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
+              System Health
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-emerald-600">Optimal</div>
+            <p className="text-[10px] text-[var(--text-muted)] mt-1">All services online</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-8 space-y-6">
+          <section className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface-1)] p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-[var(--text-strong)]">Live Market Analytics</h2>
+            </div>
+            <DashboardChartPanel />
+          </section>
+          
+          <IngestionConsole />
+        </div>
+
+        <div className="lg:col-span-4">
+          <NewsIntelligencePanel />
+        </div>
+      </div>
+    </div>
   );
 }

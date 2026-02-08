@@ -1,7 +1,7 @@
-function getRequiredEnv(name: 'NEXT_PUBLIC_API_BASE_URL' | 'NEXT_PUBLIC_DEV_ORG_ID'): string {
+function getEnv(name: string, defaultValue: string): string {
   const value = process.env[name];
   if (!value || !value.trim()) {
-    throw new Error(`Missing required environment variable: ${name}`);
+    return defaultValue;
   }
   return value;
 }
@@ -12,12 +12,12 @@ function getApiBaseUrl() {
     return serverSideBaseUrl;
   }
 
-  return getRequiredEnv('NEXT_PUBLIC_API_BASE_URL');
+  return getEnv('NEXT_PUBLIC_API_BASE_URL', 'http://localhost:8000');
 }
 
 export function getWebRuntimeConfig() {
   return {
     apiBaseUrl: getApiBaseUrl(),
-    orgId: getRequiredEnv('NEXT_PUBLIC_DEV_ORG_ID'),
+    orgId: getEnv('NEXT_PUBLIC_DEV_ORG_ID', '00000000-0000-0000-0000-000000000000'),
   };
 }

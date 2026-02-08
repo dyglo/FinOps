@@ -1,129 +1,74 @@
-import { getWebRuntimeConfig } from '@/lib/config';
-import type {
-  ApiResponse,
-  IngestionJobCreate,
-  IngestionJobRead,
-  IntelReplayCreate,
-  IntelRunCreate,
-  IntelRunRead,
-  NewsDocumentRead,
-} from '@/lib/contracts/api';
+import { getWebRuntimeConfig } from '../config';
 
-type NewsQuery = {
-  job_id?: string;
-  q?: string;
-  limit?: number;
-  offset?: number;
+export type ApiRequestOptions = {
+  orgId?: string;
+  requestId?: string;
+  params?: Record<string, string | number | undefined>;
 };
 
-class FinopsApiError extends Error {
-  readonly statusCode: number;
-
-  constructor(message: string, statusCode: number) {
-    super(message);
-    this.statusCode = statusCode;
+class ApiError extends Error {
+  constructor(public status: number, public statusText: string, public body: any) {
+    super(`API Error: ${status} ${statusText}`);
   }
 }
 
-function buildUrl(path: string, query?: Record<string, string | number | undefined>) {
-  const { apiBaseUrl } = getWebRuntimeConfig();
-  const url = new URL(path, apiBaseUrl);
-  if (query) {
-    Object.entries(query).forEach(([key, value]) => {
-      if (value !== undefined) {
-        url.searchParams.set(key, String(value));
-      }
+function getSettings() {
+  if (typeof window === 'undefined') return {
+    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000',
+    orgId: process.env.NEXT_PUBLIC_DEV_ORG_ID || '00000000-0000-0000-0000-000000000000'
+  };
+
+  const storedBaseUrl = localStorage.getItem('finops_api_url');
+  const storedOrgId = localStorage.getItem('finops_org_id');
+  const config = getWebRuntimeConfig();
+
+  return {
+    baseUrl: storedBaseUrl || config.apiBaseUrl,
+    orgId: storedOrgId || config.orgId
+  };
+}
+
+async function request<T>(
+  path: string,
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
+  body?: any,
+  options?: ApiRequestOptions
+): Promise<T> {
+  const { baseUrl, orgId: defaultOrgId } = getSettings();
+  const orgId = options?.orgId || defaultOrgId;
+  const requestId = options?.requestId || crypto.randomUUID();
+
+  const url = new URL(`${baseUrl}${path}`);
+  if (options?.params) {
+    Object.entries(options.params).forEach(([key, value]) => {
+      if (value !== undefined) url.searchParams.append(key, String(value));
     });
   }
-  return url;
-}
 
-function sleep(ms: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
-async function doRequest<T>(path: string, init?: RequestInit, query?: Record<string, string | number | undefined>) {
-  const { orgId } = getWebRuntimeConfig();
-  const response = await fetch(buildUrl(path, query), {
-    ...init,
+  const response = await fetch(url.toString(), {
+    method,
     headers: {
       'Content-Type': 'application/json',
       'X-Org-Id': orgId,
-      ...(init?.headers ?? {}),
+      'X-Request-Id': requestId,
     },
-    cache: 'no-store',
+    body: body ? JSON.stringify(body) : undefined,
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new FinopsApiError(errorText || 'Request failed', response.status);
-  }
-
-  return (await response.json()) as T;
-}
-
-async function apiFetch<T>(
-  path: string,
-  init?: RequestInit,
-  query?: Record<string, string | number | undefined>,
-): Promise<T> {
-  const method = (init?.method ?? 'GET').toUpperCase();
-  const canRetry = method === 'GET';
-  const maxAttempts = canRetry ? 3 : 1;
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    let errorBody;
     try {
-      return await doRequest<T>(path, init, query);
-    } catch (error) {
-      const isRetryable =
-        error instanceof FinopsApiError ? error.statusCode >= 500 : error instanceof Error;
-
-      if (!canRetry || !isRetryable || attempt === maxAttempts) {
-        throw error;
-      }
-
-      await sleep(250 * attempt);
+      errorBody = await response.json();
+    } catch {
+      errorBody = await response.text();
     }
+    throw new ApiError(response.status, response.statusText, errorBody);
   }
 
-  throw new Error('Unexpected request failure');
+  return response.json() as Promise<T>;
 }
 
-export const finopsApiClient = {
-  async createIngestionJob(payload: IngestionJobCreate): Promise<ApiResponse<IngestionJobRead>> {
-    return apiFetch<ApiResponse<IngestionJobRead>>('/v1/ingestion/jobs', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-  },
-
-  async getIngestionJob(jobId: string): Promise<ApiResponse<IngestionJobRead>> {
-    return apiFetch<ApiResponse<IngestionJobRead>>(`/v1/ingestion/jobs/${jobId}`);
-  },
-
-  async listNewsDocuments(query: NewsQuery = {}): Promise<ApiResponse<NewsDocumentRead[]>> {
-    return apiFetch<ApiResponse<NewsDocumentRead[]>>('/v1/documents/news', undefined, query);
-  },
-
-  async createIntelRun(payload: IntelRunCreate): Promise<ApiResponse<IntelRunRead>> {
-    return apiFetch<ApiResponse<IntelRunRead>>('/v1/intel/runs', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-  },
-
-  async getIntelRun(runId: string): Promise<ApiResponse<IntelRunRead>> {
-    return apiFetch<ApiResponse<IntelRunRead>>(`/v1/intel/runs/${runId}`);
-  },
-
-  async replayIntelRun(runId: string, payload: IntelReplayCreate = {}): Promise<ApiResponse<IntelRunRead>> {
-    return apiFetch<ApiResponse<IntelRunRead>>(`/v1/intel/runs/${runId}/replay`, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-  },
+export const api = {
+  get: <T>(path: string, options?: ApiRequestOptions) => request<T>(path, 'GET', undefined, options),
+  post: <T>(path: string, body: any, options?: ApiRequestOptions) => request<T>(path, 'POST', body, options),
 };
-
-export { FinopsApiError };

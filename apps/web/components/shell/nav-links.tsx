@@ -8,6 +8,7 @@ const navItems = [
   { href: '/news', label: 'News' },
   { href: '/research', label: 'Research' },
   { href: '/tickers', label: 'Tickers' },
+  { href: '/settings', label: 'Settings' },
 ];
 
 export function NavLinks() {

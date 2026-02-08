@@ -28,6 +28,7 @@ Institutional-grade finance intelligence platform scaffolding.
 2. Open API docs: `http://localhost:8000/docs`.
 3. Call `POST /v1/ingestion/jobs` with:
    - Header: `X-Org-Id: <tenant-uuid>`
+   - Optional Header: `X-Request-Id: <request-uuid>`
    - Body:
      - `provider: "tavily"`
      - `resource: "news_search"`
@@ -35,6 +36,9 @@ Institutional-grade finance intelligence platform scaffolding.
      - `payload: {"query":"nvidia earnings","max_results":5}`
 4. Poll `GET /v1/ingestion/jobs/{job_id}` until `status=completed`.
 5. Read normalized results with `GET /v1/documents/news?job_id=<job_id>`.
+6. Confirm tenant isolation:
+   - Repeat step 5 with another tenant `X-Org-Id`.
+   - Expected: no visibility into the first tenant's rows.
 
 ## Phase 2 Swagger Demo
 1. Create and execute deterministic run with `POST /v1/intel/runs`:

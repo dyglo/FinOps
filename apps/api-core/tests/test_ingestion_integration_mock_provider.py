@@ -152,6 +152,10 @@ def test_ingestion_post_then_get_with_mocked_provider(monkeypatch) -> None:
         assert create_resp.status_code == 200
         job = create_resp.json()['data']
         assert job['status'] == 'completed'
+        assert job['schema_version'] == 'v1'
+        assert job['attempt_count'] == 1
+        assert job['started_at'] is not None
+        assert job['completed_at'] is not None
         assert job['raw_record_count'] == 1
         assert job['normalized_record_count'] == 2
 
@@ -160,6 +164,8 @@ def test_ingestion_post_then_get_with_mocked_provider(monkeypatch) -> None:
         loaded = get_resp.json()['data']
         assert loaded['id'] == job['id']
         assert loaded['status'] == 'completed'
+        assert loaded['schema_version'] == 'v1'
+        assert loaded['attempt_count'] == 1
         assert loaded['raw_record_count'] == 1
         assert loaded['normalized_record_count'] == 2
     finally:

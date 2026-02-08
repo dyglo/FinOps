@@ -1,117 +1,125 @@
 'use client';
 
+import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
-
-import { finopsApiClient } from '@/lib/api/client';
-import type { IngestionJobRead, NewsDocumentRead } from '@/lib/contracts/api';
-
-function makeIdempotencyKey() {
-  return `news-${Date.now()}`;
-}
+import { api } from '@/lib/api/client';
+import { IngestionJobResponseSchema } from '@/lib/api/schemas';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Play, RefreshCcw } from 'lucide-react';
 
 export function IngestionConsole() {
-  const [query, setQuery] = useState('nvidia earnings');
-  const [jobId, setJobId] = useState<string | null>(null);
+  const [query, setQuery] = useState('NVIDIA earnings 2024');
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
-  const createJob = useMutation({
-    mutationFn: async () => {
-      const response = await finopsApiClient.createIngestionJob({
+  const mutation = useMutation({
+    mutationFn: async (searchQuery: string) => {
+      const payload = {
         provider: 'tavily',
         resource: 'news_search',
-        idempotency_key: makeIdempotencyKey(),
-        payload: { query, max_results: 8 },
-      });
-      return response.data;
+        idempotency_key: crypto.randomUUID(),
+        payload: { q: searchQuery },
+      };
+      const response = await api.post('/v1/ingestion/jobs', payload);
+      return IngestionJobResponseSchema.parse(response);
     },
-    onSuccess: (job) => {
-      setJobId(job.id);
+    onSuccess: (data) => {
+      setActiveJobId(data.data.id);
     },
   });
 
-  const jobQuery = useQuery({
-    queryKey: ['ingestion-job', jobId],
-    enabled: Boolean(jobId),
+  const { data: job, refetch } = useQuery({
+    queryKey: ['ingestion-job', activeJobId],
     queryFn: async () => {
-      const response = await finopsApiClient.getIngestionJob(jobId as string);
-      return response.data;
+      const response = await api.get(`/v1/ingestion/jobs/${activeJobId}`);
+      return IngestionJobResponseSchema.parse(response);
     },
-    refetchInterval: (queryData) => {
-      const state = (queryData.state.data as IngestionJobRead | undefined)?.status;
-      if (!state || state === 'pending' || state === 'running') {
-        return 2000;
-      }
-      return false;
+    enabled: !!activeJobId,
+    refetchInterval: (query) => {
+      const status = query.state.data?.data.status;
+      return status === 'completed' || status === 'failed' ? false : 3000;
     },
   });
 
-  const documentsQuery = useQuery({
-    queryKey: ['news-documents', jobId],
-    enabled: Boolean(jobId),
-    queryFn: async () => {
-      const response = await finopsApiClient.listNewsDocuments({ job_id: jobId as string, limit: 50, offset: 0 });
-      return response.data;
-    },
-  });
-
-  const status = useMemo(() => {
-    if (!jobId) {
-      return 'idle';
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      mutation.mutate(query);
     }
-    return jobQuery.data?.status ?? 'pending';
-  }, [jobId, jobQuery.data?.status]);
+  };
 
   return (
-    <section className="space-y-6">
-      <div className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface-1)] p-5">
-        <h2 className="text-lg font-semibold text-[var(--text-strong)]">Create Ingestion Job</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
-          <input
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-xl font-bold">
+          <Play className="h-5 w-5 text-emerald-500" />
+          Data Ingestion
+        </CardTitle>
+        <CardDescription>Trigger news searches and track normalization status.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <Input
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            className="w-full rounded-md border border-[var(--line-soft)] bg-white px-3 py-2 text-sm outline-none ring-sky-300 focus:ring"
-            placeholder="Search query"
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Enter search query..."
+            disabled={mutation.isPending}
+            className="flex-1"
           />
-          <button
-            type="button"
-            onClick={() => createJob.mutate()}
-            disabled={createJob.isPending || query.trim().length < 2}
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-slate-400"
-          >
-            {createJob.isPending ? 'Submitting...' : 'Submit Job'}
-          </button>
-        </div>
-      </div>
+          <Button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Run Ingestion'}
+          </Button>
+        </form>
 
-      <div className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface-1)] p-5">
-        <h2 className="text-lg font-semibold text-[var(--text-strong)]">Job Status</h2>
-        <p className="mt-3 text-sm text-[var(--text-base)]">Job ID: {jobId ?? 'No job submitted yet'}</p>
-        <p className="mt-2 text-sm text-[var(--text-base)]">Status: {status}</p>
-        {jobQuery.data?.error_message ? (
-          <p className="mt-2 text-sm text-red-700">Error: {jobQuery.data.error_message}</p>
-        ) : null}
-      </div>
+        {job && (
+          <div className="rounded-lg border border-[var(--line-soft)] bg-[var(--surface-0)] p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Job Status</span>
+              <div className="flex items-center gap-2">
+                {job.data.status !== 'completed' && job.data.status !== 'failed' && (
+                   <Loader2 className="h-3 w-3 animate-spin text-[var(--text-muted)]" />
+                )}
+                <Badge 
+                  variant={
+                    job.data.status === 'completed' ? 'success' : 
+                    job.data.status === 'failed' ? 'warning' : 'secondary'
+                  }
+                  className="capitalize"
+                >
+                  {job.data.status}
+                </Badge>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-bold">
+              <div>
+                <p>Raw Records</p>
+                <p className="text-lg text-[var(--text-strong)] mt-1">{job.data.raw_record_count}</p>
+              </div>
+              <div>
+                <p>Normalized</p>
+                <p className="text-lg text-[var(--text-strong)] mt-1">{job.data.normalized_record_count}</p>
+              </div>
+            </div>
 
-      <div className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface-1)] p-5">
-        <h2 className="text-lg font-semibold text-[var(--text-strong)]">Normalized Documents</h2>
-        {documentsQuery.isLoading ? <p className="mt-3 text-sm text-[var(--text-muted)]">Loading documents...</p> : null}
-        {documentsQuery.data && documentsQuery.data.length === 0 ? (
-          <p className="mt-3 text-sm text-[var(--text-muted)]">No documents yet for this job.</p>
-        ) : null}
-        {documentsQuery.data && documentsQuery.data.length > 0 ? (
-          <ul className="mt-4 space-y-3 text-sm text-[var(--text-base)]">
-            {documentsQuery.data.map((document: NewsDocumentRead) => (
-              <li key={document.id} className="rounded-md border border-[var(--line-soft)] bg-[var(--surface-0)] p-3">
-                <p className="font-medium text-[var(--text-strong)]">{document.title}</p>
-                <p className="mt-1 text-[var(--text-base)]">{document.snippet}</p>
-                <a href={document.source_url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sky-700">
-                  Source link
-                </a>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </div>
-    </section>
+            {job.data.error_message && (
+              <p className="text-xs text-red-500 bg-red-50 p-2 rounded border border-red-100">
+                {job.data.error_message}
+              </p>
+            )}
+
+            <div className="flex justify-between items-center pt-2">
+              <span className="text-[10px] text-[var(--text-muted)]">ID: {job.data.id.slice(0, 8)}...</span>
+              <Button size="sm" variant="ghost" onClick={() => refetch()} className="h-6 text-[10px]">
+                <RefreshCcw className="h-3 w-3 mr-1" />
+                Refresh
+              </Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
