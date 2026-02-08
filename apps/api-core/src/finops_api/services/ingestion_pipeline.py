@@ -10,9 +10,15 @@ from finops_api.config import get_settings
 from finops_api.db import SessionLocal
 from finops_api.models import NewsDocument
 from finops_api.providers.base import ProviderError
-from finops_api.providers.tavily.client import TavilyAdapter
+from finops_api.providers.registry import get_search_provider
+from finops_api.providers.serper.dto import SerperNewsResponse
+from finops_api.providers.serper.mapper import (
+    to_canonical_news_item as serper_to_canonical_news_item,
+)
 from finops_api.providers.tavily.dto import TavilySearchResponse
-from finops_api.providers.tavily.mapper import to_canonical_news_item
+from finops_api.providers.tavily.mapper import (
+    to_canonical_news_item as tavily_to_canonical_news_item,
+)
 from finops_api.repositories.ingestion import IngestionRepository
 from finops_api.repositories.ingestion_raw_payloads import IngestionRawPayloadRepository
 from finops_api.repositories.news_documents import NewsDocumentRepository
@@ -23,6 +29,79 @@ from finops_api.services.cache import (
     stable_payload_hash,
 )
 from finops_api.services.rate_limit import take_provider_token
+
+
+def _provider_rate_limit_per_minute(provider: str) -> int:
+    settings = get_settings()
+    if provider == 'tavily':
+        return settings.tavily_rate_limit_per_minute
+    if provider == 'serper':
+        return settings.serper_rate_limit_per_minute
+    return 0
+
+
+def _build_documents(
+    *,
+    org_id: UUID,
+    job_id: UUID,
+    raw_payload_id: UUID,
+    provider: str,
+    cached_payload: dict[str, object],
+) -> list[NewsDocument]:
+    documents: list[NewsDocument] = []
+
+    if provider == 'tavily':
+        tavily_response = TavilySearchResponse.model_validate(cached_payload)
+        for tavily_item in tavily_response.results:
+            normalized_tavily = tavily_to_canonical_news_item(tavily_item)
+            documents.append(
+                NewsDocument(
+                    org_id=org_id,
+                    job_id=job_id,
+                    raw_payload_id=raw_payload_id,
+                    source_provider=normalized_tavily.source_provider,
+                    normalization_version='v1',
+                    source_url=normalized_tavily.source_url,
+                    title=normalized_tavily.title,
+                    snippet=normalized_tavily.snippet,
+                    author=normalized_tavily.author,
+                    language=normalized_tavily.language,
+                    published_at=normalized_tavily.published_at,
+                    document_hash=normalized_tavily.document_hash,
+                    created_at=datetime.now(UTC),
+                )
+            )
+        return documents
+
+    if provider == 'serper':
+        serper_response = SerperNewsResponse.model_validate(cached_payload)
+        for serper_item in serper_response.news:
+            normalized_serper = serper_to_canonical_news_item(serper_item)
+            documents.append(
+                NewsDocument(
+                    org_id=org_id,
+                    job_id=job_id,
+                    raw_payload_id=raw_payload_id,
+                    source_provider=normalized_serper.source_provider,
+                    normalization_version='v1',
+                    source_url=normalized_serper.source_url,
+                    title=normalized_serper.title,
+                    snippet=normalized_serper.snippet,
+                    author=normalized_serper.author,
+                    language=normalized_serper.language,
+                    published_at=normalized_serper.published_at,
+                    document_hash=normalized_serper.document_hash,
+                    created_at=datetime.now(UTC),
+                )
+            )
+        return documents
+
+    raise ProviderError(
+        f'Unsupported provider for normalization: {provider}',
+        code='provider_unsupported',
+        provider=provider,
+        retryable=False,
+    )
 
 
 async def process_ingestion_job(
@@ -73,13 +152,13 @@ async def process_ingestion_job(
                     redis_client,
                     provider=job.provider,
                     org_id=str(org_id),
-                    limit_per_minute=settings.tavily_rate_limit_per_minute,
+                    limit_per_minute=_provider_rate_limit_per_minute(job.provider),
                 )
                 if not allowed:
-                    raise ProviderError('Provider rate limit exceeded for tavily')
+                    raise ProviderError(f'Provider rate limit exceeded for {job.provider}')
 
-                adapter = TavilyAdapter()
-                provider_response = await adapter.fetch_news(
+                adapter = get_search_provider(job.provider)
+                provider_response = await adapter.search_news(
                     idempotency_key=job.idempotency_key,
                     request_payload=job.payload,
                 )
@@ -104,27 +183,13 @@ async def process_ingestion_job(
                 provider_request_id=None,
             )
 
-            tavily_response = TavilySearchResponse.model_validate(cached_payload)
-            documents = []
-            for item in tavily_response.results:
-                normalized = to_canonical_news_item(item)
-                documents.append(
-                    NewsDocument(
-                        org_id=org_id,
-                        job_id=job.id,
-                        raw_payload_id=raw_payload.id,
-                        source_provider=normalized.source_provider,
-                        normalization_version='v1',
-                        source_url=normalized.source_url,
-                        title=normalized.title,
-                        snippet=normalized.snippet,
-                        author=normalized.author,
-                        language=normalized.language,
-                        published_at=normalized.published_at,
-                        document_hash=normalized.document_hash,
-                        created_at=datetime.now(UTC),
-                    )
-                )
+            documents = _build_documents(
+                org_id=org_id,
+                job_id=job.id,
+                raw_payload_id=raw_payload.id,
+                provider=job.provider,
+                cached_payload=cached_payload,
+            )
 
             if documents:
                 await news_repo.create_many(documents)

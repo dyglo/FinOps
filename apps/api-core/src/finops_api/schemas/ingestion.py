@@ -19,7 +19,7 @@ class IngestionJobCreate(BaseModel):
         }
     )
 
-    provider: Literal['tavily']
+    provider: Literal['tavily', 'serper']
     resource: Literal['news_search']
     idempotency_key: str = Field(min_length=4, max_length=128)
     payload: dict[str, Any] = Field(default_factory=dict)

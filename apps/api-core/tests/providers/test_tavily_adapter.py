@@ -39,7 +39,7 @@ async def test_tavily_adapter_success_returns_typed_payload() -> None:
     transport = httpx.MockTransport(handler)
     adapter = TavilyAdapter(transport=transport)
 
-    response = await adapter.fetch_news(
+    response = await adapter.search_news(
         idempotency_key='idem-1',
         request_payload={'query': 'nvda', 'max_results': 5},
     )
@@ -76,7 +76,7 @@ async def test_tavily_adapter_retries_transient_error() -> None:
     transport = httpx.MockTransport(handler)
     adapter = TavilyAdapter(transport=transport, backoff_seconds=0.01)
 
-    response = await adapter.fetch_news(
+    response = await adapter.search_news(
         idempotency_key='idem-2',
         request_payload={'query': 'rates', 'max_results': 3},
     )
@@ -96,7 +96,7 @@ async def test_tavily_adapter_timeout_exhausts_retries() -> None:
     adapter = TavilyAdapter(transport=transport, backoff_seconds=0.01, max_retries=1)
 
     with pytest.raises(ProviderError, match='exhausted retries'):
-        await adapter.fetch_news(
+        await adapter.search_news(
             idempotency_key='idem-3',
             request_payload={'query': 'macro', 'max_results': 2},
         )
@@ -116,7 +116,7 @@ async def test_tavily_adapter_does_not_retry_non_retryable_4xx() -> None:
     adapter = TavilyAdapter(transport=transport, backoff_seconds=0.01, max_retries=3)
 
     with pytest.raises(ProviderError, match='exhausted retries'):
-        await adapter.fetch_news(
+        await adapter.search_news(
             idempotency_key='idem-4',
             request_payload={'query': 'macro', 'max_results': 2},
         )

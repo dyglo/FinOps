@@ -172,6 +172,56 @@ def test_ingestion_post_then_get_with_mocked_provider(monkeypatch) -> None:
         app.dependency_overrides.clear()
 
 
+def test_ingestion_post_then_get_with_serper_provider(monkeypatch) -> None:
+    InMemoryStore.jobs.clear()
+    InMemoryStore.raw_counts.clear()
+    InMemoryStore.news_counts.clear()
+
+    monkeypatch.setattr('finops_api.routers.ingestion.IngestionRepository', FakeIngestionRepository)
+    monkeypatch.setattr(
+        'finops_api.routers.ingestion.IngestionRawPayloadRepository',
+        FakeIngestionRawPayloadRepository,
+    )
+    monkeypatch.setattr(
+        'finops_api.routers.ingestion.NewsDocumentRepository',
+        FakeNewsDocumentRepository,
+    )
+    monkeypatch.setattr(
+        'finops_api.routers.ingestion.enqueue_ingestion_job',
+        fake_enqueue_ingestion_job,
+    )
+
+    app.dependency_overrides[get_tenant_session] = override_tenant_session
+    try:
+        client = TestClient(app)
+        headers = {'X-Org-Id': '00000000-0000-0000-0000-000000000001'}
+
+        create_resp = client.post(
+            '/v1/ingestion/jobs',
+            headers=headers,
+            json={
+                'provider': 'serper',
+                'resource': 'news_search',
+                'idempotency_key': 'idem-news-serper-1',
+                'payload': {'query': 'nvidia earnings', 'num': 3},
+            },
+        )
+        assert create_resp.status_code == 200
+        job = create_resp.json()['data']
+        assert job['provider'] == 'serper'
+        assert job['status'] == 'completed'
+        assert job['raw_record_count'] == 1
+        assert job['normalized_record_count'] == 2
+
+        get_resp = client.get(f"/v1/ingestion/jobs/{job['id']}", headers=headers)
+        assert get_resp.status_code == 200
+        loaded = get_resp.json()['data']
+        assert loaded['provider'] == 'serper'
+        assert loaded['status'] == 'completed'
+    finally:
+        app.dependency_overrides.clear()
+
+
 def test_ingestion_get_enforces_tenant_isolation(monkeypatch) -> None:
     InMemoryStore.jobs.clear()
     InMemoryStore.raw_counts.clear()
