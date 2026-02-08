@@ -36,6 +36,20 @@ Institutional-grade finance intelligence platform scaffolding.
 4. Poll `GET /v1/ingestion/jobs/{job_id}` until `status=completed`.
 5. Read normalized results with `GET /v1/documents/news?job_id=<job_id>`.
 
+## Phase 2 Swagger Demo
+1. Create and execute deterministic run with `POST /v1/intel/runs`:
+   - Header: `X-Org-Id: <tenant-uuid>`
+   - Body example:
+     - `run_type: "research_summary"`
+     - `model_name: "gpt-5-mini"`
+     - `prompt_version: "v1"`
+     - `input_snapshot_uri: "nvidia"`
+     - `input_payload: {"query":"nvidia","limit":5}`
+     - `execution_mode: "live"`
+2. Fetch run ledger with `GET /v1/intel/runs/{run_id}`.
+3. Replay deterministically from stored tool responses:
+   - `POST /v1/intel/runs/{run_id}/replay` with `{}` body.
+
 ## Architecture Notes
 - Multi-tenant by default via required `X-Org-Id` header and `org_id`-scoped tables.
 - Deterministic pipelines and auditable AI run ledger are first-class concerns.
