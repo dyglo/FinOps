@@ -1,12 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: light;
+  --bg-top: #f1f6fb;
+  --bg-bottom: #fcfdff;
+  --surface-0: #f8fbff;
+  --surface-1: #ffffff;
+  --surface-2: #eef4fb;
+  --line-soft: #d8e2ee;
+  --line-strong: #9bb0c8;
+  --text-base: #243142;
+  --text-strong: #0e2035;
+  --text-muted: #516377;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
-  background: linear-gradient(180deg, #f4f7fb 0%, #ffffff 100%);
-  color: #0f172a;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
 }
