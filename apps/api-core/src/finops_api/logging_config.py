@@ -10,7 +10,10 @@ def configure_logging() -> None:
     settings = get_settings()
 
     handler = logging.StreamHandler(sys.stdout)
-    formatter = JsonFormatter('%(asctime)s %(levelname)s %(name)s %(message)s %(request_id)s')
+    formatter = JsonFormatter(
+        '%(asctime)s %(levelname)s %(name)s %(message)s %(request_id)s '
+        '%(trace_id)s %(method)s %(path)s %(status_code)s %(response_time_ms)s'
+    )
     handler.setFormatter(formatter)
 
     root = logging.getLogger()

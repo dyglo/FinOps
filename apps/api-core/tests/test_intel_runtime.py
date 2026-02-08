@@ -68,12 +68,13 @@ class FakeNewsRepository:
     async def list_news(
         self,
         *,
+        org_id: UUID,
         job_id: UUID | None,
         q: str | None,
         limit: int,
         offset: int,
     ) -> list[SimpleNamespace]:
-        _ = (job_id, q, limit, offset)
+        _ = (org_id, job_id, q, limit, offset)
         return self.rows
 
 

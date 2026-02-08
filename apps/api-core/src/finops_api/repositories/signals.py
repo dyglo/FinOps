@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,10 +12,10 @@ class SignalRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def query(self, symbol: str, limit: int) -> list[SignalFeature]:
+    async def query(self, *, org_id: UUID, symbol: str, limit: int) -> list[SignalFeature]:
         stmt = (
             select(SignalFeature)
-            .where(SignalFeature.symbol == symbol.upper())
+            .where(SignalFeature.org_id == org_id, SignalFeature.symbol == symbol.upper())
             .order_by(desc(SignalFeature.created_at))
             .limit(limit)
         )

@@ -19,30 +19,35 @@ class NewsDocumentRepository:
             await self.session.refresh(row)
         return rows
 
-    async def list_by_job(self, *, job_id: UUID, limit: int = 100) -> list[NewsDocument]:
+    async def list_by_job(
+        self, *, org_id: UUID, job_id: UUID, limit: int = 100
+    ) -> list[NewsDocument]:
         stmt = (
             select(NewsDocument)
-            .where(NewsDocument.job_id == job_id)
+            .where(NewsDocument.org_id == org_id, NewsDocument.job_id == job_id)
             .order_by(desc(NewsDocument.created_at))
             .limit(limit)
         )
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def count_by_job(self, *, job_id: UUID) -> int:
-        stmt = select(func.count(NewsDocument.id)).where(NewsDocument.job_id == job_id)
+    async def count_by_job(self, *, org_id: UUID, job_id: UUID) -> int:
+        stmt = select(func.count(NewsDocument.id)).where(
+            NewsDocument.org_id == org_id, NewsDocument.job_id == job_id
+        )
         result = await self.session.execute(stmt)
         return int(result.scalar_one())
 
     async def list_news(
         self,
         *,
+        org_id: UUID,
         job_id: UUID | None,
         q: str | None,
         limit: int,
         offset: int,
     ) -> list[NewsDocument]:
-        stmt = select(NewsDocument)
+        stmt = select(NewsDocument).where(NewsDocument.org_id == org_id)
         if job_id is not None:
             stmt = stmt.where(NewsDocument.job_id == job_id)
         if q:

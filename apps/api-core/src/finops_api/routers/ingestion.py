@@ -93,6 +93,7 @@ async def create_job(
     await enqueue_ingestion_job(job_id=job.id, org_id=org_id)
     raw_count = await raw_repo.count_by_job(job_id=job.id)
     normalized_count = await _count_normalized_records(
+        org_id=org_id,
         job_id=job.id,
         resource=job.resource,
         news_repo=news_repo,
@@ -107,6 +108,7 @@ async def create_job(
         meta=MetaEnvelope(
             request_id=request.state.request_id,
             org_id=org_id,
+            trace_id=request.state.trace_id,
             ts=datetime.now(UTC),
         ),
     )
@@ -127,12 +129,13 @@ async def get_job(
     raw_repo = IngestionRawPayloadRepository(session)
     news_repo = NewsDocumentRepository(session)
     market_repo = MarketRepository(session)
-    job = await repo.get(job_id)
+    job = await repo.get(org_id=org_id, job_id=job_id)
     if job is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Job not found')
 
     raw_count = await raw_repo.count_by_job(job_id=job.id)
     normalized_count = await _count_normalized_records(
+        org_id=org_id,
         job_id=job.id,
         resource=job.resource,
         news_repo=news_repo,
@@ -147,6 +150,7 @@ async def get_job(
         meta=MetaEnvelope(
             request_id=request.state.request_id,
             org_id=org_id,
+            trace_id=request.state.trace_id,
             ts=datetime.now(UTC),
         ),
     )
@@ -154,15 +158,17 @@ async def get_job(
 
 async def _count_normalized_records(
     *,
+    org_id: UUID,
     job_id: UUID,
     resource: str,
     news_repo: NewsDocumentRepository,
     market_repo: MarketRepository,
 ) -> int:
     if resource == 'news_search':
-        return await news_repo.count_by_job(job_id=job_id)
+        return await news_repo.count_by_job(org_id=org_id, job_id=job_id)
     if resource == 'market_timeseries_backfill':
-        return await market_repo.count_timeseries_by_job(job_id=job_id)
+        return await market_repo.count_timeseries_by_job(org_id=org_id, job_id=job_id)
     if resource == 'market_quote_refresh':
-        return await market_repo.count_quotes_by_job(job_id=job_id)
+        return await market_repo.count_quotes_by_job(org_id=org_id, job_id=job_id)
     return 0
+

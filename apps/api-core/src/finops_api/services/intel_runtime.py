@@ -64,7 +64,11 @@ async def _execute_live_mode(
     audit_repo: ToolCallAuditRepository,
 ) -> IntelRunOutput:
     tool_input = _build_live_tool_input(run)
-    tool_output = await _run_news_document_search_tool(session=session, tool_input=tool_input)
+    tool_output = await _run_news_document_search_tool(
+        session=session,
+        org_id=org_id,
+        tool_input=tool_input,
+    )
 
     citations = _collect_citations(tool_output)
     await _validate_citations(citations=citations)
@@ -168,10 +172,12 @@ def _build_live_tool_input(run: IntelRun) -> NewsSearchToolInput:
 async def _run_news_document_search_tool(
     *,
     session: AsyncSession,
+    org_id: UUID,
     tool_input: NewsSearchToolInput,
 ) -> NewsSearchToolOutput:
     news_repo = NewsDocumentRepository(session)
     rows = await news_repo.list_news(
+        org_id=org_id,
         job_id=tool_input.job_id,
         q=tool_input.query,
         limit=tool_input.limit,

@@ -33,8 +33,8 @@ class IntelRepository:
         await self.session.refresh(run)
         return run
 
-    async def get(self, run_id: UUID) -> IntelRun | None:
-        stmt = select(IntelRun).where(IntelRun.id == run_id)
+    async def get(self, *, org_id: UUID, run_id: UUID) -> IntelRun | None:
+        stmt = select(IntelRun).where(IntelRun.org_id == org_id, IntelRun.id == run_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 

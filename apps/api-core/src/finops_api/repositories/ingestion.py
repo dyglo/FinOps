@@ -52,8 +52,11 @@ class IngestionRepository:
                 raise
             return existing
 
-    async def get(self, job_id: UUID) -> IngestionJob | None:
-        stmt = select(IngestionJob).where(IngestionJob.id == job_id)
+    async def get(self, *, org_id: UUID, job_id: UUID) -> IngestionJob | None:
+        stmt = select(IngestionJob).where(
+            IngestionJob.org_id == org_id,
+            IngestionJob.id == job_id,
+        )
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
