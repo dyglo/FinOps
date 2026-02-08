@@ -2,14 +2,47 @@
 
 :root {
   --bg-main: #ffffff;
-  --accent-mint: #dcfce7;
-  --accent-blue: #e0f2fe;
-  --accent-purple: #f3e8ff;
+  --surface-0: #f8fbff;
+  --surface-1: #ffffff;
+  --surface-2: #eef4fb;
+  --line-soft: #d8e2ee;
+  --line-strong: #9bb0c8;
   --text-strong: #000000;
   --text-base: #4b5563;
   --text-muted: #9ca3af;
+  --accent-mint: #dcfce7;
+  --accent-blue: #e0f2fe;
+  --accent-purple: #f3e8ff;
   --radius-pill: 9999px;
   --font-display: "Geist", "Inter", sans-serif;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --hero-g1: #d1fae5;
+  --hero-g2: #e0f2fe;
+}
+
+.dark {
+  --bg-main: #000000;
+  --surface-0: #0a0a0a;
+  --surface-1: #111111;
+  --surface-2: #1a1a1a;
+  --line-soft: #222222;
+  --line-strong: #333333;
+  --text-strong: #ffffff;
+  --text-base: #a1a1aa;
+  --text-muted: #52525b;
+  --accent-mint: #064e3b;
+  --accent-blue: #082f49;
+  --accent-purple: #3b0764;
+  --glass-bg: rgba(0, 0, 0, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --hero-g1: #064e3b;
+  --hero-g2: #082f49;
+}
+
+@theme {
+  --color-background: var(--bg-main);
+  --color-foreground: var(--text-base);
 }
 
 * {
@@ -22,16 +55,17 @@ body {
   background-color: var(--bg-main);
   color: var(--text-base);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .hero-gradient {
-  background: radial-gradient(circle at 50% -20%, #d1fae5 0%, #e0f2fe 35%, #ffffff 70%);
+  background: radial-gradient(circle at 50% -20%, var(--hero-g1) 0%, var(--hero-g2) 35%, var(--bg-main) 70%);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--glass-border);
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
 }
 
@@ -46,4 +80,24 @@ body {
 
 .animate-spin-slow {
   animation: spin-slow 10s linear infinite;
+}
+
+/* Scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 10px;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #333;
+}
+
+/* Fix for lucide icons in dark mode if needed */
+.dark svg {
+  /* filter: drop-shadow(0 0 1px rgba(255,255,255,0.1)); */
 }

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { AppShell } from '@/components/shell/app-shell';
 import { AppQueryProvider } from '@/providers/query-provider';
+import { ThemeProvider } from '@/providers/theme-provider';
 
 export const metadata: Metadata = {
   title: 'FinOps',
@@ -12,11 +13,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
-        <AppQueryProvider>
-          <AppShell>{children}</AppShell>
-        </AppQueryProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AppQueryProvider>
+            <AppShell>{children}</AppShell>
+          </AppQueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -22,8 +22,8 @@ export function NavLinks() {
           <Link
             key={item.href}
             href={item.href}
-            className={`text-sm font-medium transition-colors hover:text-black ${
-              active ? 'text-black' : 'text-gray-500'
+            className={`text-sm font-medium transition-colors hover:text-black dark:hover:text-white ${
+              active ? 'text-black dark:text-white' : 'text-gray-500 dark:text-gray-400'
             }`}
           >
             {item.label}

@@ -27,34 +27,34 @@ export default function DashboardPage() {
       {/* TERMINAL HEADER & COMMAND BAR */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-           <div className="h-10 w-10 rounded-xl bg-black flex items-center justify-center shadow-lg shadow-black/20">
+           <div className="h-10 w-10 rounded-xl bg-black dark:bg-zinc-900 flex items-center justify-center shadow-lg shadow-black/20 border border-white/10">
               <Terminal className="h-5 w-5 text-white" />
            </div>
            <div>
-              <h1 className="text-xl font-bold text-black tracking-tight">FinOps Terminal</h1>
+              <h1 className="text-xl font-bold text-black dark:text-white tracking-tight text-[var(--text-strong)]">FinOps Terminal</h1>
               <div className="flex items-center gap-2">
                  <Badge variant="success" className="text-[8px] h-4 px-1.5 font-black uppercase">System Live</Badge>
-                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">v2.0.4-alpha</span>
+                 <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-bold uppercase tracking-widest text-[var(--text-muted)]">v2.0.4-alpha</span>
               </div>
            </div>
         </div>
 
         <div className="flex-1 max-w-xl relative">
-           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-zinc-500" />
            <Input 
              placeholder="Search markets, intelligence, or run command (/) ..." 
-             className="pl-10 h-10 bg-white/40 border-gray-200 rounded-xl glass-card border-none shadow-sm focus-visible:ring-black"
+             className="pl-10 h-10 bg-white/40 dark:bg-zinc-900/40 border-gray-200 dark:border-zinc-800 rounded-xl glass-card border-none shadow-sm focus-visible:ring-black dark:focus-visible:ring-white"
            />
         </div>
 
         <div className="flex items-center gap-3">
-           <div className="flex flex-col items-end px-3 border-r border-gray-100">
-              <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">AI Latency</span>
-              <span className="text-xs font-bold text-emerald-600">12ms</span>
+           <div className="flex flex-col items-end px-3 border-r border-gray-100 dark:border-zinc-800">
+              <span className="text-[9px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-tighter">AI Latency</span>
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono">12ms</span>
            </div>
            <div className="flex flex-col items-end px-3">
-              <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">API Health</span>
-              <span className="text-xs font-bold text-blue-600">99.9%</span>
+              <span className="text-[9px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-tighter">API Health</span>
+              <span className="text-xs font-bold text-blue-600 dark:text-blue-400 font-mono">99.9%</span>
            </div>
         </div>
       </div>
@@ -77,12 +77,12 @@ export default function DashboardPage() {
             
             <div className="flex items-center justify-between px-2">
                <div className="flex items-center gap-2">
-                  <LayoutGrid className="h-4 w-4 text-gray-400" />
-                  <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500">Intelligence Workspace</h2>
+                  <LayoutGrid className="h-4 w-4 text-gray-400 dark:text-zinc-500" />
+                  <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 dark:text-zinc-400">Intelligence Workspace</h2>
                </div>
                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-[10px] h-6 px-3 rounded-md bg-white border-gray-100 font-bold uppercase text-gray-400">Real-time Feed</Badge>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400"><ListFilter className="h-3 w-3" /></Button>
+                  <Badge variant="outline" className="text-[10px] h-6 px-3 rounded-md bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 font-bold uppercase text-gray-400 dark:text-zinc-500">Real-time Feed</Badge>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 dark:text-zinc-500"><ListFilter className="h-3 w-3" /></Button>
                </div>
             </div>
 
@@ -90,16 +90,16 @@ export default function DashboardPage() {
 
             {/* Live Signals Ledger */}
             <GlassCard className="p-0 overflow-hidden min-h-[500px] border-none shadow-xl">
-               <div className="p-5 border-b border-gray-100 bg-white/60 backdrop-blur-md flex items-center justify-between">
+               <div className="p-5 border-b border-[var(--line-soft)] bg-[var(--surface-1)]/60 backdrop-blur-md flex items-center justify-between">
                   <div className="flex items-center gap-2">
                      <Zap className="h-4 w-4 text-amber-500" />
-                     <span className="text-sm font-bold text-black">Live Signals Ledger</span>
+                     <span className="text-sm font-bold text-black dark:text-white">Live Signals Ledger</span>
                   </div>
                   <div className="flex items-center gap-2">
-                     <Badge className="text-[9px] bg-black text-white border-none h-5 font-black uppercase tracking-widest px-2">42 New Signals</Badge>
+                     <Badge className="text-[9px] bg-black dark:bg-white text-white dark:text-black border-none h-5 font-black uppercase tracking-widest px-2">42 New Signals</Badge>
                   </div>
                </div>
-               <div className="divide-y divide-gray-50 overflow-y-auto max-h-[600px] custom-scrollbar">
+               <div className="divide-y divide-[var(--line-soft)] overflow-y-auto max-h-[600px] custom-scrollbar">
                   <SignalRow ticker="NVDA" signal="Institutional Inflow" impact="High" confidence="94%" age="2m ago" color="emerald" />
                   <SignalRow ticker="AAPL" signal="Supply Chain Anomaly" impact="Med" confidence="82%" age="12m ago" color="amber" />
                   <SignalRow ticker="TSLA" signal="Regulatory Headwind" impact="High" confidence="78%" age="24m ago" color="red" />
@@ -110,8 +110,8 @@ export default function DashboardPage() {
                   <SignalRow ticker="GOOGL" signal="AI Monetization" impact="High" confidence="92%" age="4h ago" color="emerald" />
                   <SignalRow ticker="META" signal="Ad Revenue Surge" impact="High" confidence="95%" age="5h ago" color="emerald" />
                </div>
-               <div className="p-4 bg-gray-50/50 border-t border-gray-50 text-center">
-                  <Button variant="ghost" className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-black">
+               <div className="p-4 bg-[var(--surface-0)] border-t border-[var(--line-soft)] text-center">
+                  <Button variant="ghost" className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-zinc-500 hover:text-black dark:hover:text-white transition-colors">
                      View Full Archive
                   </Button>
                </div>
@@ -122,7 +122,7 @@ export default function DashboardPage() {
          <div className="lg:col-span-4 flex flex-col gap-6">
             <div className="flex items-center gap-2 px-2">
                <ShieldCheck className="h-4 w-4 text-blue-500" />
-               <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500">Verified Intelligence</h2>
+               <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 dark:text-zinc-400">Verified Intelligence</h2>
             </div>
             <div className="h-[calc(100vh-280px)] min-h-[700px] sticky top-24">
                <NewsIntelligence />
@@ -135,13 +135,13 @@ export default function DashboardPage() {
 
 function MetricItem({ label, value, change, icon }: any) {
   return (
-    <GlassCard className="p-4 flex flex-col gap-1 hover:bg-white transition-all group border-none shadow-sm cursor-pointer">
+    <GlassCard className="p-4 flex flex-col gap-1 hover:bg-white dark:hover:bg-zinc-900 transition-all group border-none shadow-sm cursor-pointer">
        <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter group-hover:text-black transition-colors">{label}</span>
+          <span className="text-[10px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-tighter group-hover:text-black dark:group-hover:text-white transition-colors">{label}</span>
           {icon}
        </div>
        <div className="flex items-baseline gap-2">
-          <span className="text-xl font-bold text-black font-mono tracking-tighter">{value}</span>
+          <span className="text-xl font-bold text-black dark:text-white font-mono tracking-tighter">{value}</span>
           <span className={`text-[9px] font-black ${change.startsWith('+') ? 'text-emerald-500' : 'text-blue-500'}`}>{change}</span>
        </div>
     </GlassCard>
@@ -157,24 +157,24 @@ function SignalRow({ ticker, signal, impact, confidence, age, color }: any) {
   };
 
   return (
-    <div className="p-5 flex items-center justify-between hover:bg-gray-50/50 transition-colors group cursor-pointer">
+    <div className="p-5 flex items-center justify-between hover:bg-[var(--surface-2)] transition-colors group cursor-pointer">
        <div className="flex items-center gap-4">
           <div className={`h-2 w-2 rounded-full ${colorMap[color]} shadow-sm group-hover:scale-125 transition-transform`} />
           <div className="flex flex-col">
-             <span className="text-xs font-black text-black">{ticker}</span>
-             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{signal}</span>
+             <span className="text-xs font-black text-black dark:text-white">{ticker}</span>
+             <span className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-tighter">{signal}</span>
           </div>
        </div>
        <div className="flex items-center gap-10 text-right">
           <div className="flex flex-col">
-             <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Impact</span>
-             <span className={`text-[10px] font-bold ${impact === 'High' ? 'text-black' : 'text-gray-500'}`}>{impact}</span>
+             <span className="text-[9px] font-black text-gray-300 dark:text-zinc-600 uppercase tracking-widest">Impact</span>
+             <span className={`text-[10px] font-bold ${impact === 'High' ? 'text-black dark:text-white' : 'text-gray-500 dark:text-zinc-400'}`}>{impact}</span>
           </div>
           <div className="flex flex-col w-12">
-             <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Confidence</span>
-             <span className="text-[10px] font-bold text-black">{confidence}</span>
+             <span className="text-[9px] font-black text-gray-300 dark:text-zinc-600 uppercase tracking-widest font-mono">Confidence</span>
+             <span className="text-[10px] font-bold text-black dark:text-white font-mono">{confidence}</span>
           </div>
-          <span className="text-[10px] font-bold text-gray-300 w-16">{age}</span>
+          <span className="text-[10px] font-bold text-gray-300 dark:text-zinc-600 w-16 font-mono">{age}</span>
        </div>
     </div>
   )
