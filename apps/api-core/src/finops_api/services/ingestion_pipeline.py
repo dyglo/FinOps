@@ -11,6 +11,10 @@ from finops_api.db import SessionLocal
 from finops_api.models import NewsDocument
 from finops_api.providers.base import ProviderError
 from finops_api.providers.registry import get_search_provider
+from finops_api.providers.serpapi.dto import SerpApiSearchResponse
+from finops_api.providers.serpapi.mapper import (
+    to_canonical_news_item as serpapi_to_canonical_news_item,
+)
 from finops_api.providers.serper.dto import SerperNewsResponse
 from finops_api.providers.serper.mapper import (
     to_canonical_news_item as serper_to_canonical_news_item,
@@ -37,6 +41,8 @@ def _provider_rate_limit_per_minute(provider: str) -> int:
         return settings.tavily_rate_limit_per_minute
     if provider == 'serper':
         return settings.serper_rate_limit_per_minute
+    if provider == 'serpapi':
+        return settings.serpapi_rate_limit_per_minute
     return 0
 
 
@@ -91,6 +97,29 @@ def _build_documents(
                     language=normalized_serper.language,
                     published_at=normalized_serper.published_at,
                     document_hash=normalized_serper.document_hash,
+                    created_at=datetime.now(UTC),
+                )
+            )
+        return documents
+
+    if provider == 'serpapi':
+        serpapi_response = SerpApiSearchResponse.model_validate(cached_payload)
+        for serpapi_item in serpapi_response.news_results:
+            normalized_serpapi = serpapi_to_canonical_news_item(serpapi_item)
+            documents.append(
+                NewsDocument(
+                    org_id=org_id,
+                    job_id=job_id,
+                    raw_payload_id=raw_payload_id,
+                    source_provider=normalized_serpapi.source_provider,
+                    normalization_version='v1',
+                    source_url=normalized_serpapi.source_url,
+                    title=normalized_serpapi.title,
+                    snippet=normalized_serpapi.snippet,
+                    author=normalized_serpapi.author,
+                    language=normalized_serpapi.language,
+                    published_at=normalized_serpapi.published_at,
+                    document_hash=normalized_serpapi.document_hash,
                     created_at=datetime.now(UTC),
                 )
             )
