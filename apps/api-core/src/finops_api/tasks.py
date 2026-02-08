@@ -29,11 +29,11 @@ async def run_intel_analysis(ctx: dict[str, Any], payload: dict[str, Any]) -> di
 
     async with SessionLocal() as session:
         await session.execute(
-            text("SELECT set_config('app.current_org_id', :org_id, true)"),
+            text("SELECT set_config('app.current_org_id', :org_id, false)"),
             {'org_id': str(org_id)},
         )
         intel_repo = IntelRepository(session)
-        run = await intel_repo.get(run_id)
+        run = await intel_repo.get(org_id=org_id, run_id=run_id)
         if run is None:
             raise ValueError(f'Intel run not found: {run_id}')
 

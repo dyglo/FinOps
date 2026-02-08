@@ -25,7 +25,7 @@ async def get_tenant_session(
     session: AsyncSession = Depends(get_db_session),
 ) -> AsyncGenerator[AsyncSession, None]:
     await session.execute(
-        text("SELECT set_config('app.current_org_id', :org_id, true)"),
+        text("SELECT set_config('app.current_org_id', :org_id, false)"),
         {'org_id': str(org_id)},
     )
     yield session

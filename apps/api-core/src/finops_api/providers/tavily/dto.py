@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, field_validator
 
 
 class TavilySearchRequest(BaseModel):
@@ -19,6 +19,27 @@ class TavilySearchResult(BaseModel):
     content: str = ''
     score: float | None = None
     published_date: datetime | None = None
+
+    @field_validator('published_date', mode='before')
+    @classmethod
+    def parse_published_date(cls, value: object) -> object:
+        if value is None or isinstance(value, datetime):
+            return value
+        if isinstance(value, str):
+            raw = value.strip()
+            if not raw:
+                return None
+            for fmt in (
+                '%a, %d %b %Y %H:%M:%S GMT',
+                '%Y-%m-%dT%H:%M:%S%z',
+                '%Y-%m-%dT%H:%M:%S.%f%z',
+                '%Y-%m-%d',
+            ):
+                try:
+                    return datetime.strptime(raw, fmt)
+                except ValueError:
+                    continue
+        return value
 
 
 class TavilySearchResponse(BaseModel):

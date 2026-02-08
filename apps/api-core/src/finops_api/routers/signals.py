@@ -23,12 +23,14 @@ async def query_signals(
     session: AsyncSession = Depends(get_tenant_session),
 ) -> ApiResponse[list[SignalFeatureRead]]:
     repo = SignalRepository(session)
-    rows = await repo.query(symbol=symbol, limit=limit)
+    rows = await repo.query(org_id=org_id, symbol=symbol, limit=limit)
     return ApiResponse[list[SignalFeatureRead]](
         data=[SignalFeatureRead.model_validate(row, from_attributes=True) for row in rows],
         meta=MetaEnvelope(
             request_id=request.state.request_id,
             org_id=org_id,
+            trace_id=request.state.trace_id,
             ts=datetime.now(UTC),
         ),
     )
+

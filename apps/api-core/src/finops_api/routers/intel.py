@@ -37,6 +37,7 @@ async def create_run(
         meta=MetaEnvelope(
             request_id=request.state.request_id,
             org_id=org_id,
+            trace_id=request.state.trace_id,
             ts=datetime.now(UTC),
         ),
     )
@@ -50,7 +51,7 @@ async def get_run(
     session: AsyncSession = Depends(get_tenant_session),
 ) -> ApiResponse[IntelRunRead]:
     repo = IntelRepository(session)
-    run = await repo.get(run_id)
+    run = await repo.get(org_id=org_id, run_id=run_id)
     if run is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Run not found')
 
@@ -59,6 +60,7 @@ async def get_run(
         meta=MetaEnvelope(
             request_id=request.state.request_id,
             org_id=org_id,
+            trace_id=request.state.trace_id,
             ts=datetime.now(UTC),
         ),
     )
@@ -73,7 +75,7 @@ async def replay_run(
     session: AsyncSession = Depends(get_tenant_session),
 ) -> ApiResponse[IntelRunRead]:
     repo = IntelRepository(session)
-    source = await repo.get(run_id)
+    source = await repo.get(org_id=org_id, run_id=run_id)
     if source is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Source run not found')
 
@@ -98,6 +100,8 @@ async def replay_run(
         meta=MetaEnvelope(
             request_id=request.state.request_id,
             org_id=org_id,
+            trace_id=request.state.trace_id,
             ts=datetime.now(UTC),
         ),
     )
+

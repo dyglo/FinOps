@@ -31,6 +31,7 @@ async def test_tavily_adapter_success_returns_typed_payload() -> None:
                         'title': 'NVIDIA beats estimates',
                         'url': 'https://example.com/news/nvda',
                         'content': 'Revenue grows strongly.',
+                        'published_date': 'Wed, 04 Feb 2026 02:09:46 GMT',
                     }
                 ],
             },
@@ -47,6 +48,7 @@ async def test_tavily_adapter_success_returns_typed_payload() -> None:
     assert response.http_status == 200
     assert response.payload['query'] == 'nvda'
     assert len(response.payload['results']) == 1
+    assert response.payload['results'][0]['published_date'] is not None
 
 
 @pytest.mark.asyncio

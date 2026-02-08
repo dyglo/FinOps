@@ -21,6 +21,7 @@ async def get_context(
         meta=MetaEnvelope(
             request_id=request.state.request_id,
             org_id=org_id,
+            trace_id=request.state.trace_id,
             ts=datetime.now(UTC),
         ),
     )

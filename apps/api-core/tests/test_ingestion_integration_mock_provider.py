@@ -77,11 +77,11 @@ class FakeIngestionRepository:
         InMemoryStore.jobs[job.id] = job
         return job
 
-    async def get(self, job_id: UUID) -> JobRecord | None:
+    async def get(self, *, org_id: UUID, job_id: UUID) -> JobRecord | None:
         job = InMemoryStore.jobs.get(job_id)
         if job is None:
             return None
-        if job.org_id != self.session.org_id:
+        if job.org_id != self.session.org_id or job.org_id != org_id:
             return None
         return job
 
@@ -98,7 +98,7 @@ class FakeNewsDocumentRepository:
     def __init__(self, session: DummySession) -> None:  # noqa: ARG002
         pass
 
-    async def count_by_job(self, *, job_id: UUID) -> int:
+    async def count_by_job(self, *, org_id: UUID, job_id: UUID) -> int:  # noqa: ARG002
         return InMemoryStore.news_counts.get(job_id, 0)
 
 
@@ -106,10 +106,10 @@ class FakeMarketRepository:
     def __init__(self, session: DummySession) -> None:  # noqa: ARG002
         pass
 
-    async def count_timeseries_by_job(self, *, job_id: UUID) -> int:
+    async def count_timeseries_by_job(self, *, org_id: UUID, job_id: UUID) -> int:  # noqa: ARG002
         return InMemoryStore.market_timeseries_counts.get(job_id, 0)
 
-    async def count_quotes_by_job(self, *, job_id: UUID) -> int:
+    async def count_quotes_by_job(self, *, org_id: UUID, job_id: UUID) -> int:  # noqa: ARG002
         return InMemoryStore.market_quote_counts.get(job_id, 0)
 
 

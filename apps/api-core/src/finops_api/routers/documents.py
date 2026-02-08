@@ -55,13 +55,15 @@ async def list_news_documents(
     session: AsyncSession = Depends(get_tenant_session),
 ) -> ApiResponse[list[NewsDocumentRead]]:
     repo = NewsDocumentRepository(session)
-    rows = await repo.list_news(job_id=job_id, q=q, limit=limit, offset=offset)
+    rows = await repo.list_news(org_id=org_id, job_id=job_id, q=q, limit=limit, offset=offset)
 
     return ApiResponse[list[NewsDocumentRead]](
         data=[NewsDocumentRead.model_validate(row, from_attributes=True) for row in rows],
         meta=MetaEnvelope(
             request_id=request.state.request_id,
             org_id=org_id,
+            trace_id=request.state.trace_id,
             ts=datetime.now(UTC),
         ),
     )
+

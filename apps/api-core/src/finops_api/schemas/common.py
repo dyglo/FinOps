@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class MetaEnvelope(BaseModel):
     request_id: str
     org_id: UUID
+    trace_id: str | None = None
     ts: datetime
     version: str = 'v1'
 

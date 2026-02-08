@@ -43,6 +43,7 @@ class FakeNewsDocumentRepository:
     async def list_news(
         self,
         *,
+        org_id: UUID,  # noqa: ARG002
         job_id: UUID | None,
         q: str | None,
         limit: int,

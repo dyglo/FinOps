@@ -27,6 +27,7 @@ async def get_timeseries(
 ) -> ApiResponse[list[TimeseriesPointRead]]:
     repo = MarketRepository(session)
     rows = await repo.get_timeseries(
+        org_id=org_id,
         symbol=symbol,
         timeframe=timeframe,
         start=start,
@@ -38,6 +39,7 @@ async def get_timeseries(
         meta=MetaEnvelope(
             request_id=request.state.request_id,
             org_id=org_id,
+            trace_id=request.state.trace_id,
             ts=datetime.now(UTC),
         ),
     )
@@ -51,7 +53,7 @@ async def get_quote(
     session: AsyncSession = Depends(get_tenant_session),
 ) -> ApiResponse[MarketQuoteRead]:
     repo = MarketRepository(session)
-    row = await repo.get_latest_quote(symbol=symbol)
+    row = await repo.get_latest_quote(org_id=org_id, symbol=symbol)
     if row is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Quote not found')
 
@@ -60,6 +62,8 @@ async def get_quote(
         meta=MetaEnvelope(
             request_id=request.state.request_id,
             org_id=org_id,
+            trace_id=request.state.trace_id,
             ts=datetime.now(UTC),
         ),
     )
+

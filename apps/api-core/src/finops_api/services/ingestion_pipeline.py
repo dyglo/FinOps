@@ -163,7 +163,7 @@ async def process_ingestion_job(
 
     async with SessionLocal() as session:
         await session.execute(
-            text("SELECT set_config('app.current_org_id', :org_id, true)"),
+            text("SELECT set_config('app.current_org_id', :org_id, false)"),
             {'org_id': str(org_id)},
         )
 
@@ -172,7 +172,7 @@ async def process_ingestion_job(
         news_repo = NewsDocumentRepository(session)
         market_repo = MarketRepository(session)
 
-        job = await ingestion_repo.get(job_id)
+        job = await ingestion_repo.get(org_id=org_id, job_id=job_id)
         if job is None:
             raise ProviderError(f'Ingestion job not found: {job_id}')
 

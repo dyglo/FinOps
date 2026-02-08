@@ -24,6 +24,8 @@ jobs:
         run: ruff check src tests
       - name: Mypy
         run: mypy src
+      - name: Alembic (offline SQL compile)
+        run: alembic upgrade head --sql > /tmp/alembic.sql
       - name: Pytest
         run: pytest -q
 

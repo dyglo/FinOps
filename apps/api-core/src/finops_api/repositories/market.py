@@ -17,6 +17,7 @@ class MarketRepository:
     async def get_timeseries(
         self,
         *,
+        org_id: UUID,
         symbol: str,
         timeframe: str | None,
         start: datetime | None,
@@ -25,7 +26,7 @@ class MarketRepository:
     ) -> list[MarketTimeseries]:
         stmt = (
             select(MarketTimeseries)
-            .where(MarketTimeseries.symbol == symbol.upper())
+            .where(MarketTimeseries.org_id == org_id, MarketTimeseries.symbol == symbol.upper())
             .order_by(desc(MarketTimeseries.ts))
             .limit(limit)
         )
@@ -39,10 +40,10 @@ class MarketRepository:
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_latest_quote(self, *, symbol: str) -> MarketQuote | None:
+    async def get_latest_quote(self, *, org_id: UUID, symbol: str) -> MarketQuote | None:
         stmt = (
             select(MarketQuote)
-            .where(MarketQuote.symbol == symbol.upper())
+            .where(MarketQuote.org_id == org_id, MarketQuote.symbol == symbol.upper())
             .order_by(desc(MarketQuote.as_of))
             .limit(1)
         )
@@ -133,26 +134,28 @@ class MarketRepository:
         )
         await self.session.execute(update_stmt)
         await self.session.commit()
-        latest = await self.get_latest_quote(symbol=symbol)
+        latest = await self.get_latest_quote(org_id=org_id, symbol=symbol)
         assert latest is not None
         return latest
 
-    async def count_timeseries_by_job(self, *, job_id: UUID) -> int:
+    async def count_timeseries_by_job(self, *, org_id: UUID, job_id: UUID) -> int:
         raw_ids_subquery = select(IngestionRawPayload.id).where(
-            IngestionRawPayload.job_id == job_id
+            IngestionRawPayload.org_id == org_id, IngestionRawPayload.job_id == job_id
         )
         stmt = select(func.count(MarketTimeseries.id)).where(
-            MarketTimeseries.raw_payload_id.in_(raw_ids_subquery)
+            MarketTimeseries.org_id == org_id,
+            MarketTimeseries.raw_payload_id.in_(raw_ids_subquery),
         )
         result = await self.session.execute(stmt)
         return int(result.scalar_one())
 
-    async def count_quotes_by_job(self, *, job_id: UUID) -> int:
+    async def count_quotes_by_job(self, *, org_id: UUID, job_id: UUID) -> int:
         raw_ids_subquery = select(IngestionRawPayload.id).where(
-            IngestionRawPayload.job_id == job_id
+            IngestionRawPayload.org_id == org_id, IngestionRawPayload.job_id == job_id
         )
         stmt = select(func.count(MarketQuote.id)).where(
-            MarketQuote.raw_payload_id.in_(raw_ids_subquery)
+            MarketQuote.org_id == org_id,
+            MarketQuote.raw_payload_id.in_(raw_ids_subquery),
         )
         result = await self.session.execute(stmt)
         return int(result.scalar_one())
