@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     )
     redis_url: str = Field(default='redis://redis:6379/0', alias='REDIS_URL')
     tavily_api_key: str = Field(default='', alias='TAVILY_API_KEY')
+    provider_cache_ttl_seconds: int = Field(default=300, alias='PROVIDER_CACHE_TTL_SECONDS')
+    tavily_rate_limit_per_minute: int = Field(default=30, alias='TAVILY_RATE_LIMIT_PER_MINUTE')
 
     worker_max_jobs: int = Field(default=20, alias='WORKER_MAX_JOBS')
 
