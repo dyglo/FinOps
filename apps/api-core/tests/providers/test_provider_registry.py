@@ -6,10 +6,11 @@ import pytest
 
 from finops_api.config import get_settings
 from finops_api.providers.base import ProviderError
-from finops_api.providers.registry import get_search_provider
+from finops_api.providers.registry import get_market_data_provider, get_search_provider
 from finops_api.providers.serpapi.client import SerpApiAdapter
 from finops_api.providers.serper.client import SerperAdapter
 from finops_api.providers.tavily.client import TavilyAdapter
+from finops_api.providers.twelvedata.client import TwelveDataAdapter
 
 
 def test_registry_resolves_tavily_provider() -> None:
@@ -36,3 +37,15 @@ def test_registry_resolves_serpapi_provider() -> None:
 def test_registry_rejects_unknown_provider() -> None:
     with pytest.raises(ProviderError, match='Unsupported search provider'):
         get_search_provider('unknown')
+
+
+def test_registry_resolves_twelvedata_provider() -> None:
+    os.environ['TWELVE_DATA_API_KEY'] = 'test-key'
+    get_settings.cache_clear()
+    provider = get_market_data_provider('twelvedata')
+    assert isinstance(provider, TwelveDataAdapter)
+
+
+def test_market_registry_rejects_unknown_provider() -> None:
+    with pytest.raises(ProviderError, match='Unsupported market data provider'):
+        get_market_data_provider('unknown')
