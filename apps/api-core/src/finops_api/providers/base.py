@@ -5,7 +5,24 @@ from typing import Protocol
 
 
 class ProviderError(Exception):
-    pass
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str = 'provider_error',
+        provider: str | None = None,
+        http_status: int | None = None,
+        retryable: bool = False,
+    ) -> None:
+        super().__init__(message)
+        self.message = message
+        self.code = code
+        self.provider = provider
+        self.http_status = http_status
+        self.retryable = retryable
+
+    def __str__(self) -> str:
+        return self.message
 
 
 @dataclass(slots=True)

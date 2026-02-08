@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     tavily_api_key: str = Field(default='', alias='TAVILY_API_KEY')
     provider_cache_ttl_seconds: int = Field(default=300, alias='PROVIDER_CACHE_TTL_SECONDS')
     tavily_rate_limit_per_minute: int = Field(default=30, alias='TAVILY_RATE_LIMIT_PER_MINUTE')
+    provider_timeout_seconds: float = Field(default=10.0, alias='PROVIDER_TIMEOUT_SECONDS')
+    provider_max_retries: int = Field(default=3, alias='PROVIDER_MAX_RETRIES')
+    provider_backoff_seconds: float = Field(default=0.5, alias='PROVIDER_BACKOFF_SECONDS')
 
     worker_max_jobs: int = Field(default=20, alias='WORKER_MAX_JOBS')
 
